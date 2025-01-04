@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,6 +15,11 @@ public class PlayerController : MonoBehaviour
     private bool _isInAir;
     private bool _isGrounded;
     [SerializeField] private float _jumpForce;
+    [SerializeField] private GameObject _stepRayUpper;
+    [SerializeField] private GameObject _stepRayLower;
+    [SerializeField] private float _smoothClimbDistance = 0.2f;
+    [SerializeField] private float _stepSmooth = 0.2f;
+
 
     // Start is called before the first frame update
     void Start()
@@ -29,26 +35,67 @@ public class PlayerController : MonoBehaviour
     {
         _horizontalMove = Input.GetAxis("Horizontal");
         _verticalMove = Input.GetAxis("Vertical");
-        if(Input.GetKeyDown(KeyCode.Space)) { _isJump = true; }
+        if(Input.GetKeyDown(KeyCode.Space))
+        { 
+            _isJump = true;
+            _playerAnimationManager?.UpdateJumpParams(_isJump, false);
+
+        }
     }
 
     private void FixedUpdate()
     {
+        CheckGround();
         if (_isInAir) {
             HandleInAir();
-            CheckGround();
-            _playerAnimationManager.UpdateJumpParams(_isJump, _isGrounded);
         }
         HandleRotate();
         _playerAnimationManager?.UpdateMovementParams(_horizontalMove, _verticalMove);
-        _playerAnimationManager?.UpdateJumpParams(_isJump, _isGrounded);
+        //_playerAnimationManager?.UpdateJumpParams(_isJump, _isGrounded);
         _rigidbody.velocity = new Vector3(_horizontalMove, 0, _verticalMove);
-        if (_isGrounded && _isJump)
+        if (_isJump)
         {
             DoJump();
             _isJump = false;
             _isGrounded = false;
         }
+
+        StepClimb();
+    }
+
+    private void StepClimb()
+    {
+        Debug.DrawRay(_stepRayLower.transform.position, transform.TransformDirection(Vector3.forward) * _smoothClimbDistance, Color.red);
+        Debug.DrawRay(_stepRayUpper.transform.position, transform.TransformDirection(Vector3.forward) * _smoothClimbDistance, Color.green);
+        //if (Mathf.Abs(_horizontalMove) <= 0.1f) return;
+        RaycastHit lowerHit;
+        RaycastHit upperHit;
+        if (Physics.Raycast(_stepRayLower.transform.position, transform.TransformDirection(Vector3.forward), out lowerHit, _smoothClimbDistance))
+        {
+            Debug.Log("hit1");
+            if (!Physics.Raycast(_stepRayUpper.transform.position, transform.TransformDirection(Vector3.forward), out upperHit, _smoothClimbDistance)) 
+            {
+                _rigidbody.position += new Vector3(0, _stepSmooth, 0);
+                Debug.Log("unhit 2 --> up");
+
+            }
+        }
+        if (Physics.Raycast(_stepRayLower.transform.position, transform.TransformDirection(new Vector3(1.5f, 0, 1)), out lowerHit, _smoothClimbDistance))
+        {
+            if (!Physics.Raycast(_stepRayUpper.transform.position, transform.TransformDirection(new Vector3(1.5f, 0, 1)), out upperHit, _smoothClimbDistance))
+            {
+                _rigidbody.position += new Vector3(0, _stepSmooth, 0);
+            }
+        }
+
+        if (Physics.Raycast(_stepRayLower.transform.position, transform.TransformDirection(new Vector3(-1.5f, 0, 1)), out lowerHit, _smoothClimbDistance))
+        {
+            if (!Physics.Raycast(_stepRayUpper.transform.position, transform.TransformDirection(new Vector3(-1.5f, 0, 1)), out upperHit, _smoothClimbDistance))
+            {
+                _rigidbody.position += new Vector3(0, _stepSmooth, 0);
+            }
+        }
+
 
     }
 
@@ -59,8 +106,13 @@ public class PlayerController : MonoBehaviour
 
     private void CheckGround()
     {
-        _isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.55f/2 + 0.1f, LayerMask.GetMask("Ground"));
-        if (_isGrounded) _isInAir = false;
+        _isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.55f/2 + 0.2f, LayerMask.GetMask("Ground"));
+        _isInAir = true;
+        if (_isGrounded) 
+        {
+            _isInAir = false;
+            _playerAnimationManager?.UpdateJumpParams(false, true);
+        }
     }
 
     private void DoJump()
@@ -78,7 +130,8 @@ public class PlayerController : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
 
-            _rigidbody.rotation = Quaternion.Slerp(_rigidbody.rotation, targetRotation, Time.deltaTime * 20f);
+            //_rigidbody.rotation = Quaternion.Slerp(_rigidbody.rotation, targetRotation, Time.deltaTime * 20f);
+            _rigidbody.transform.DORotate(targetRotation.eulerAngles, 0.2f, RotateMode.Fast);
         }
     }
 }
