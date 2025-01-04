@@ -14,11 +14,11 @@ public class PlayerController : MonoBehaviour
     private PlayerAnimationManager _playerAnimationManager;
     private bool _isInAir;
     private bool _isGrounded;
-    [SerializeField] private float _jumpForce;
-    [SerializeField] private GameObject _stepRayUpper;
-    [SerializeField] private GameObject _stepRayLower;
-    [SerializeField] private float _smoothClimbDistance = 0.2f;
-    [SerializeField] private float _stepSmooth = 0.2f;
+    [SerializeField] private float _jumpForce = 50f;
+    [Header("StairCheck")]
+    [SerializeField] private Transform _stairCheckTransform;
+    [SerializeField] float stepHeight = 0.2f; // Maximum step height
+
 
 
     // Start is called before the first frame update
@@ -65,43 +65,34 @@ public class PlayerController : MonoBehaviour
 
     private void StepClimb()
     {
-        Debug.DrawRay(_stepRayLower.transform.position, transform.TransformDirection(Vector3.forward) * _smoothClimbDistance, Color.red);
-        Debug.DrawRay(_stepRayUpper.transform.position, transform.TransformDirection(Vector3.forward) * _smoothClimbDistance, Color.green);
-        //if (Mathf.Abs(_horizontalMove) <= 0.1f) return;
-        RaycastHit lowerHit;
-        RaycastHit upperHit;
-        if (Physics.Raycast(_stepRayLower.transform.position, transform.TransformDirection(Vector3.forward), out lowerHit, _smoothClimbDistance))
-        {
-            Debug.Log("hit1");
-            if (!Physics.Raycast(_stepRayUpper.transform.position, transform.TransformDirection(Vector3.forward), out upperHit, _smoothClimbDistance)) 
-            {
-                _rigidbody.position += new Vector3(0, _stepSmooth, 0);
-                Debug.Log("unhit 2 --> up");
+        // Ensure there's movement input
+        if (Mathf.Abs(_horizontalMove) <= 0.1f && Mathf.Abs(_verticalMove) <= 0.1f)
+            return;
 
+        // Raycast parameters
+        float stepDepth = 0.2f;  // Depth of the step in front of the player
+        Vector3 rayOrigin = _stairCheckTransform.position;
+
+        // Raycast to detect a step
+        if (Physics.Raycast(rayOrigin, transform.forward, out RaycastHit lowerHit, 0.3f))
+        {
+            // Perform a secondary raycast above the step to ensure it's climbable
+            Vector3 upperRayOrigin = rayOrigin + Vector3.up * stepHeight;
+            if (!Physics.Raycast(upperRayOrigin, transform.forward, stepDepth))
+            {
+                _rigidbody.position += new Vector3(0, stepHeight, 0.1f);
+
+                // Debug visualization
+                //Debug.DrawRay(rayOrigin, transform.forward * stepDepth, Color.green, 2f); // Green for lower ray
+                //Debug.DrawRay(upperRayOrigin, transform.forward * stepDepth, Color.red, 2f); // Red for upper ray
+                //Debug.Log("Climbed step");
             }
         }
-        if (Physics.Raycast(_stepRayLower.transform.position, transform.TransformDirection(new Vector3(1.5f, 0, 1)), out lowerHit, _smoothClimbDistance))
-        {
-            if (!Physics.Raycast(_stepRayUpper.transform.position, transform.TransformDirection(new Vector3(1.5f, 0, 1)), out upperHit, _smoothClimbDistance))
-            {
-                _rigidbody.position += new Vector3(0, _stepSmooth, 0);
-            }
-        }
-
-        if (Physics.Raycast(_stepRayLower.transform.position, transform.TransformDirection(new Vector3(-1.5f, 0, 1)), out lowerHit, _smoothClimbDistance))
-        {
-            if (!Physics.Raycast(_stepRayUpper.transform.position, transform.TransformDirection(new Vector3(-1.5f, 0, 1)), out upperHit, _smoothClimbDistance))
-            {
-                _rigidbody.position += new Vector3(0, _stepSmooth, 0);
-            }
-        }
-
-
     }
 
     private void HandleInAir()
     {
-        _rigidbody.AddForce(new Vector3(0, -9.8f * 8, 0), ForceMode.Acceleration);
+        _rigidbody.AddForce(new Vector3(0, -9.8f * 10, 0), ForceMode.Acceleration);
     }
 
     private void CheckGround()
