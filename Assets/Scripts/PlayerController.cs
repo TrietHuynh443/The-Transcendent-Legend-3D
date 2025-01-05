@@ -72,36 +72,38 @@ public class PlayerController : MonoBehaviour
         // Raycast parameters
         float stepDepth = 0.2f;  // Depth of the step in front of the player
         Vector3 rayOrigin = _stairCheckTransform.position;
+        Vector3 upperRayOrigin = rayOrigin + Vector3.up * stepHeight;
 
         // Raycast to detect a step
         if (Physics.Raycast(rayOrigin, transform.forward, out RaycastHit lowerHit, 0.3f))
         {
             // Perform a secondary raycast above the step to ensure it's climbable
-            Vector3 upperRayOrigin = rayOrigin + Vector3.up * stepHeight;
-            if (!Physics.Raycast(upperRayOrigin, transform.forward, stepDepth))
+            if (lowerHit.collider.tag != "Walkable") return;
+            if (!Physics.Raycast(upperRayOrigin, transform.forward, 0.3f))
             {
                 _rigidbody.position += new Vector3(0, stepHeight, 0.1f);
-
-                // Debug visualization
-                //Debug.DrawRay(rayOrigin, transform.forward * stepDepth, Color.green, 2f); // Green for lower ray
-                //Debug.DrawRay(upperRayOrigin, transform.forward * stepDepth, Color.red, 2f); // Red for upper ray
-                //Debug.Log("Climbed step");
             }
         }
     }
 
     private void HandleInAir()
     {
-        _rigidbody.AddForce(new Vector3(0, -9.8f * 10, 0), ForceMode.Acceleration);
+        var originVec = _rigidbody.velocity;
+        _rigidbody.AddForce(0, -9.8f*2*9.8f, 0, ForceMode.Acceleration);
     }
 
     private void CheckGround()
     {
-        _isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.55f/2 + 0.2f, LayerMask.GetMask("Ground"));
+        Vector3 boxSize = new Vector3(0.2f, 0.1f, 0.2f);
+        Vector3 boxCenter = transform.position + Vector3.down * (1.55f / 2);
+
+        Collider[] overlaps = Physics.OverlapBox(boxCenter, boxSize, Quaternion.identity, LayerMask.GetMask("Ground"));
+        _isGrounded = overlaps.Length > 0;
         _isInAir = true;
         if (_isGrounded) 
         {
             _isInAir = false;
+            _rigidbody.velocity.Set(_rigidbody.velocity.x, 0, _rigidbody.velocity.y);
             _playerAnimationManager?.UpdateJumpParams(false, true);
         }
     }
@@ -117,12 +119,26 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 direction = new Vector3(_horizontalMove, 0, _verticalMove);
 
-        if (direction.sqrMagnitude > 0.01f) 
+        if (direction.sqrMagnitude > 0.05f) 
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
 
             //_rigidbody.rotation = Quaternion.Slerp(_rigidbody.rotation, targetRotation, Time.deltaTime * 20f);
             _rigidbody.transform.DORotate(targetRotation.eulerAngles, 0.2f, RotateMode.Fast);
         }
+    }
+    private void OnDrawGizmosSelected()
+    {
+        if (_rigidbody == null) return;
+
+        // Define the box size and position
+        Vector3 boxSize = new Vector3(0.2f, 0.1f, 0.2f); // Same as used in BoxCast
+        Vector3 boxCenter = transform.position + Vector3.down * (1.55f / 2); // Same center as BoxCast
+
+        // Set Gizmos color based on whether the object is grounded
+        Gizmos.color = _isGrounded ? Color.green : Color.red;
+
+        // Draw the box for debugging
+        Gizmos.DrawWireCube(boxCenter, boxSize * 2); // Multiply size by 2 since it's the full size, not half-size
     }
 }
