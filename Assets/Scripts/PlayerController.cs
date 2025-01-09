@@ -81,7 +81,7 @@ public class PlayerController : MonoBehaviour
             if (lowerHit.collider.tag != "Walkable") return;
             if (!Physics.Raycast(upperRayOrigin, transform.forward, 0.3f))
             {
-                _rigidbody.position += new Vector3(0, stepHeight, 0.1f);
+                _rigidbody.position += new Vector3(0, stepHeight, 0) + transform.forward*0.1f;
             }
         }
     }
