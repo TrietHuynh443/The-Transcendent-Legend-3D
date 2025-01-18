@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     private PlayerAnimationManager _playerAnimationManager;
     private bool _isInAir;
     private bool _isGrounded;
-    [SerializeField] private float _jumpForce = 50f;
+    [SerializeField] private float _jumpForce = 20f;
     [Header("StairCheck")]
     [SerializeField] private Transform _stairCheckTransform;
     [SerializeField] float stepHeight = 0.2f; // Maximum step height
@@ -30,39 +30,86 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    void Update()
+    [SerializeField] private float maxJumpTime = 0.2f;  // Time player can hold jump for max height
+    [SerializeField] private float jumpHoldForce = 20f; // Force applied when holding the jump button
+    [SerializeField] private float coyoteTime = 0.2f;   // Allow jump shortly after leaving the ground
+    private float _jumpTimer;
+    private bool _isHoldingJump;
+    private float _coyoteTimer;
+    
+    private void DoJump()
     {
-        _horizontalMove = Input.GetAxis("Horizontal");
-        _verticalMove = Input.GetAxis("Vertical");
-        if(Input.GetKeyDown(KeyCode.Space))
-        { 
-            _isJump = true;
-            _playerAnimationManager?.UpdateJumpParams(_isJump, false);
-
-        }
+        // Check if within coyote time or grounded
+        if (!_isGrounded && _coyoteTimer <= 0f) return;
+    
+        // Initial jump force
+        _rigidbody.AddForce(new Vector3(0, _jumpForce, 0), ForceMode.Impulse);
+    
+        // Set state variables
+        _isInAir = true;
+        _coyoteTimer = 0f; // Reset coyote time
+        _jumpTimer = 0f;   // Reset jump hold timer
+        _isHoldingJump = true;
+    
+        // Update animation
+        _playerAnimationManager?.UpdateJumpParams(true, false);
     }
 
+    private void Update()
+    {
+        // Capture jump input
+        _horizontalMove = Input.GetAxis("Horizontal");
+        _verticalMove = Input.GetAxis("Vertical");
+    
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _isJump = true;
+        }
+    
+        if (Input.GetKey(KeyCode.Space))
+        {
+            _isHoldingJump = true;
+        }
+        else
+        {
+            _isHoldingJump = false;
+        }
+    
+        // Increment coyote timer if not grounded
+        if (!_isGrounded)
+        {
+            _coyoteTimer += Time.deltaTime;
+        }
+        else
+        {
+            _coyoteTimer = 0f;
+        }
+    }
+    
     private void FixedUpdate()
     {
         CheckGround();
-        if (_isInAir) {
-            HandleInAir();
-        }
+        if (_isInAir) HandleInAir();
         HandleRotate();
         _playerAnimationManager?.UpdateMovementParams(_horizontalMove, _verticalMove);
-        //_playerAnimationManager?.UpdateJumpParams(_isJump, _isGrounded);
-        _rigidbody.velocity = new Vector3(_horizontalMove, 0, _verticalMove);
+        _rigidbody.velocity = new Vector3(_horizontalMove, _rigidbody.velocity.y, _verticalMove);
+    
         if (_isJump)
         {
             DoJump();
             _isJump = false;
-            _isGrounded = false;
         }
-
+    
+        if (_isHoldingJump && _jumpTimer < maxJumpTime)
+        {
+            // Add extra force while jump button is held, within the allowed time
+            _rigidbody.AddForce(new Vector3(0, jumpHoldForce * Time.fixedDeltaTime, 0), ForceMode.Force);
+            _jumpTimer += Time.fixedDeltaTime;
+        }
+    
         StepClimb();
     }
-
+    
     private void StepClimb()
     {
         // Ensure there's movement input
@@ -89,7 +136,7 @@ public class PlayerController : MonoBehaviour
     private void HandleInAir()
     {
         var originVec = _rigidbody.velocity;
-        _rigidbody.AddForce(0, -9.8f*2*9.8f, 0, ForceMode.Acceleration);
+        _rigidbody.AddForce(0, -9.8f*12f, 0, ForceMode.Force);
     }
 
     private void CheckGround()
@@ -108,18 +155,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void DoJump()
-    {
-        if (!_isGrounded) { return; }
-        _rigidbody.AddForce(new Vector3(0, _jumpForce, 0), ForceMode.Impulse);
-        _isInAir = true;
-    }
-
     private void HandleRotate()
     {
         Vector3 direction = new Vector3(_horizontalMove, 0, _verticalMove);
 
-        if (direction.sqrMagnitude > 0.05f) 
+        if (direction.sqrMagnitude > 0.15f) 
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
 
