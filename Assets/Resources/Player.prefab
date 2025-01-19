@@ -1636,6 +1636,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _jumpForce: 50
+  _stairCheckTransform: {fileID: 0}
+  stepHeight: 0.2
+  maxJumpTime: 0.2
+  jumpHoldForce: 20
+  coyoteTime: 0.2
 --- !u!114 &5835231600809261844
 MonoBehaviour:
   m_ObjectHideFlags: 0
