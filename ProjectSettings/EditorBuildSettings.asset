@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Photon Test.unity
+    guid: 667dd4d9e24916946b1728fa3dd0faad
   m_configObjects: {}
