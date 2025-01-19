@@ -23,13 +23,14 @@ namespace UI
         {
             if (ButtonSelectionHandler.SelectedButton != null)
             {
-                EventAggregator.Instance.RaiseEvent(new SubmitCharacterEvent());
+                UIManager.Instance.UIDataSO.CharacterId = ButtonSelectionHandler.SelectedButton.GetInstanceID().ToString();
+                EventAggregator.Instance?.RaiseEvent(new SubmitCharacterEvent());
             }
             else
             {
                 Debug.Log("You need to select a character");
                 //Popup error
-                EventAggregator.Instance.RaiseEvent(new OnPopupEvent()
+                EventAggregator.Instance?.RaiseEvent(new OnPopupEvent()
                 {
                     PopupMessage = "You need to select a character",
                     PopupType = EPopupType.Error
