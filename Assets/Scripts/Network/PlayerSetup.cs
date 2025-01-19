@@ -4,16 +4,20 @@ using UnityEngine;
 
 public class PlayerSetup : MonoBehaviour
 {
-    private PlayerController _controller;
+    private PlayerMovementController _controller;
     [SerializeField] private GameObject _camera;
+    private RoomManager _roomManager;
 
     void Awake()
     {
-        _controller = GetComponent<PlayerController>();
+        _controller = GetComponent<PlayerMovementController>();
         _controller.enabled = false;
         
         _camera.SetActive(false);
+        _roomManager = FindObjectOfType<RoomManager>();
+        _roomManager.RegisterPlayer(transform.gameObject);
     }
+
     public void IsLocalPlayer()
     {
         _controller.enabled = true;

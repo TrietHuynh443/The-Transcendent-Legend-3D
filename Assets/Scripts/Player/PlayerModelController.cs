@@ -9,7 +9,9 @@ public class PlayerModelController : MonoBehaviour
     [SerializeField] private GameObject _playerObj;
     
     private Animator _animator;
+    private float _playerHeight;
     public Animator Animator => _animator;
+    public float PlayerHeight => _playerHeight;
 
     private int _currentModel = 0;
 
@@ -18,7 +20,9 @@ public class PlayerModelController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SetModel(0);
+        RoomManager _roomManager = FindObjectOfType<RoomManager>();
+        int currentPlayerCount = _roomManager.CurrentPlayersCount;
+        SetModel(currentPlayerCount % _models.Count);
     }
 
     public void SetModel(int modelID)

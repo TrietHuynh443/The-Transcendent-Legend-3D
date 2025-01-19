@@ -37,7 +37,6 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
     
     [Header("Ground Check")]
-    [SerializeField] private float _playerHeight;
     [SerializeField] private LayerMask _groundLayer;
     private bool _isGrounded;
     
@@ -135,7 +134,7 @@ public class PlayerMovementController : MonoBehaviour
         }
         else if (IsAnimationPlaying(PlayerAnimationState.Jump_Land))
         {
-            if (AnimationTime() >= 1)
+            if (AnimationTime() >= 1 || (_isGrounded && AnimationTime() >= 0.5))
             {
                 SetAnimation(_isMoving ? PlayerAnimationState.Run : PlayerAnimationState.Idle);
             }
