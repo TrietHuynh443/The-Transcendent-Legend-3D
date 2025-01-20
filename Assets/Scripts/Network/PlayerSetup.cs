@@ -16,23 +16,11 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
         
         _camera.SetActive(false);
         _roomManager = FindObjectOfType<RoomManager>();
-        if (photonView.IsMine)
-        {
-            _roomManager.GetComponent<PhotonView>().RPC("RegisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.UserId);
-        }
     }
 
     public void IsLocalPlayer()
     {
         _controller.enabled = true;
         _camera.SetActive(true);
-    }
-
-    void OnDestroy()
-    {
-        if (photonView.IsMine)
-        {
-            _roomManager.GetComponent<PhotonView>().RPC("DeregisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.UserId);
-        }
     }
 }

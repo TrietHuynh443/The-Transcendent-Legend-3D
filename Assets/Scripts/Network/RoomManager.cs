@@ -10,8 +10,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject _playerPrefab;
     [Space]
     [SerializeField] private Transform _spawnPoint;
-    
-    [SerializeField]  private List<GameObject> _players = new List<GameObject>();
+
+    [SerializeField] private List<GameObject> _players = new List<GameObject>();
+    [SerializeField] private Dictionary<(Player, Player), GameObject> _chains = new Dictionary<(Player, Player), GameObject>();
     
     public int CurrentPlayersCount => _players.Count;
     
@@ -27,8 +28,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        base.OnConnectedToMaster();
-        
         Debug.Log("Network: Connected to Server");
         
         PhotonNetwork.JoinLobby();
@@ -36,8 +35,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedLobby()
     {
-        base.OnJoinedLobby();
-        
         Debug.Log("Network: Joined Lobby");
 
         PhotonNetwork.JoinOrCreateRoom("Room", null, null);
@@ -45,76 +42,107 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        base.OnJoinedRoom();
-        
         Debug.Log("Network: Joined Room");
         
-        GameObject player = PhotonNetwork.Instantiate(_playerPrefab.name, _spawnPoint.position + Vector3.forward * (_players.Count * 5f), Quaternion.identity);
+        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+        
+        GameObject player = PhotonNetwork.Instantiate(_playerPrefab.name, _spawnPoint.position + Vector3.forward * (playerCount * 5f), Quaternion.identity);
         player.GetComponent<PlayerSetup>().IsLocalPlayer();
+        photonView.RPC("RegisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer);
     }
 
-    private GameObject FindPlayerById(string playerId)
+    public override void OnPlayerLeftRoom(Player player)
+    {
+        Debug.Log("Network: Left Room");
+        
+        photonView.RPC("UnregisterPlayer", RpcTarget.AllBuffered, player);
+    }
+
+    private GameObject FindPlayerById(int actorNumber)
     {
         foreach (var obj in FindObjectsOfType<PlayerSetup>())
         {
-            if (obj.GetComponent<PhotonView>().Owner.UserId == playerId)
+            if (obj.GetComponent<PhotonView>().Owner.ActorNumber == actorNumber)
                 return obj.gameObject;
         }
         return null;
     }
 
     [PunRPC]
-    public void RegisterPlayer(string playerID)
+    public void RegisterPlayer(Player player)
     {
-        GameObject player = FindPlayerById(playerID);
-        _players.Add(player);
+        Debug.Log("Network: Registering Player " + player.ActorNumber);
         
-        if (_players.Count >= 2)
+        if (PhotonNetwork.CurrentRoom.PlayerCount >= 2)
         {
-            // Get the last two players in the list
-            GameObject player1 = _players[^2];
-            GameObject player2 = _players[^1];
+            for (int i = 0; i < PhotonNetwork.PlayerList.Length - 1; i++)
+            {
+                Player player1 = PhotonNetwork.PlayerList[i];
+                Player player2 = PhotonNetwork.PlayerList[i + 1];
 
-            // Call the CreateChain method with the last two players
-            _chainManager.CreateChain(player1, player2);
+                if (!_chains.ContainsKey((player1, player2)))
+                {
+                    GameObject player1Obj = FindPlayerById(player1.ActorNumber);
+                    GameObject player2Obj = FindPlayerById(player2.ActorNumber);
+
+                    if (player1Obj != null && player2Obj != null)
+                    {
+                        Debug.Log("Creating chain between player " + player1.ActorNumber + " and " + player2.ActorNumber);
+                        GameObject chain = _chainManager.CreateChain(player1Obj, player2Obj);
+                        _chains.Add((player1, player2), chain);
+                    }
+                }
+            }
         }
     }
 
     [PunRPC]
-    public void DeregisterPlayer(string playerID)
+    public void UnregisterPlayer(Player player)
     {
-        GameObject player = FindPlayerById(playerID);
-        if (!_players.Contains(player))
+        Debug.Log("Network: Unregister Player " + player.ActorNumber);
+        
+        Player previousPlayer = null;
+        Player nextPlayer = null;
+
+        foreach (var playerPair in _chains.Keys)
         {
-            Debug.LogWarning("Player not found in the list.");
-            return;
+            if (Equals(playerPair.Item1, player))
+            {
+                nextPlayer = playerPair.Item2;
+            }
+            if (Equals(playerPair.Item2, player))
+            {
+                previousPlayer = playerPair.Item1;
+            }
         }
 
-        int index = _players.IndexOf(player);
-
-        // Remove the player from the list
-        _players.RemoveAt(index);
-
-        // Handle chain removal and re-creation
-        GameObject previousPlayer = index > 0 ? _players[index - 1] : null;
-        GameObject nextPlayer = index < _players.Count ? _players[index] : null;
-
-        // Remove the chain involving the current player
-        if (nextPlayer != null)
+        if (_chains.ContainsKey((player, nextPlayer)))
         {
-            _chainManager.DeleteChain(player);
+            Debug.Log("Destroying chain between player " + player.ActorNumber + " and " + nextPlayer.ActorNumber);
+            Destroy(_chains[(player, nextPlayer)]);
+            _chains.Remove((player, nextPlayer));
+        }
+        
+        if (_chains.ContainsKey((previousPlayer, player)))
+        {
+            Debug.Log("Destroying chain between player " + previousPlayer.ActorNumber + " and " + player.ActorNumber);
+            Destroy(_chains[(previousPlayer, player)]);
+            _chains.Remove((previousPlayer, player));
         }
 
-        // Remove the chain between previous and next (if exists)
-        if (previousPlayer != null)
-        {
-            _chainManager.DeleteChain(previousPlayer);
-        }
-
-        // Create a new chain between previous and next
         if (previousPlayer != null && nextPlayer != null)
         {
-            _chainManager.CreateChain(previousPlayer, nextPlayer);
+            GameObject player1Obj = FindPlayerById(previousPlayer.ActorNumber);
+            GameObject player2Obj = FindPlayerById(nextPlayer.ActorNumber);
+
+            if (player1Obj != null && player2Obj != null)
+            {
+                Debug.Log("Creating chain between player " + previousPlayer.ActorNumber + " and " + nextPlayer.ActorNumber);
+                GameObject chain = _chainManager.CreateChain(player1Obj, player2Obj);
+                _chains.Add((previousPlayer, nextPlayer), chain);
+            }
         }
+        
+       
     }
 }

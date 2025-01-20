@@ -19,8 +19,7 @@ public class PlayerModelController : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
-        RoomManager roomManager = FindObjectOfType<RoomManager>();
-        int currentPlayerCount = roomManager.CurrentPlayersCount;
+        int currentPlayerCount = PhotonNetwork.CurrentRoom.PlayerCount;
         if (photonView.IsMine)
         {
             photonView.RPC("SetModel", RpcTarget.AllBuffered, currentPlayerCount % _models.Count);

@@ -7,7 +7,6 @@ using UnityEngine.Serialization;
 
 public class ChainManager : MonoBehaviourPunCallbacks
 {
-    private Dictionary<GameObject, GameObject> _solvers = new Dictionary<GameObject, GameObject>();
     [SerializeField] private GameObject _solverPrefab;
     [SerializeField] private GameObject _chainPrefab;
 
@@ -18,18 +17,13 @@ public class ChainManager : MonoBehaviourPunCallbacks
     [Range(0, 15)] [SerializeField] private int _chainCategory = 10;
     [SerializeField] private float _controlPointMass = 0.01f;
 
-    public void CreateChain(GameObject player1, GameObject player2)
+    public GameObject CreateChain(GameObject player1, GameObject player2)
     {
         GameObject solver = Instantiate(_solverPrefab);
-        _solvers.Add(player1, solver);
 
         StartCoroutine(CreateChainBluePrint(solver, player1, player2));
-    }
 
-    public void DeleteChain(GameObject player1)
-    {
-        Destroy(_solvers[player1]);
-        _solvers.Remove(player1);
+        return solver;
     }
 
     private IEnumerator CreateChainBluePrint(GameObject solver, GameObject player1, GameObject player2)
@@ -106,10 +100,6 @@ public class ChainManager : MonoBehaviourPunCallbacks
             obiSolver.particleCollisionConstraintParameters.enabled = false;
             obiSolver.collisionConstraintParameters.enabled = false;
             obiSolver.pinConstraintParameters.enabled = false;
-        }
-        else
-        {
-            Debug.Log("Help2");
         }
     }
 }
