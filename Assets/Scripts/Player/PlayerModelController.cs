@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 
-public class PlayerModelController : MonoBehaviour
+public class PlayerModelController : MonoBehaviourPunCallbacks
 {
     [SerializeField] private List<GameObject> _models;
     [SerializeField] private GameObject _playerObj;
@@ -14,17 +14,20 @@ public class PlayerModelController : MonoBehaviour
     public float PlayerHeight => _playerHeight;
 
     private int _currentModel = 0;
-
     public int CurrentModel => _currentModel;
 
     // Start is called before the first frame update
     void Start()
     {
-        RoomManager _roomManager = FindObjectOfType<RoomManager>();
-        int currentPlayerCount = _roomManager.CurrentPlayersCount;
-        SetModel(currentPlayerCount % _models.Count);
+        RoomManager roomManager = FindObjectOfType<RoomManager>();
+        int currentPlayerCount = roomManager.CurrentPlayersCount;
+        if (photonView.IsMine)
+        {
+            photonView.RPC("SetModel", RpcTarget.AllBuffered, currentPlayerCount % _models.Count);
+        }
     }
 
+    [PunRPC]
     public void SetModel(int modelID)
     {
         if (modelID < 0 || modelID >= _models.Count)
@@ -36,9 +39,7 @@ public class PlayerModelController : MonoBehaviour
         }
 
         GameObject model = Instantiate(_models[modelID], _playerObj.transform);
-        // GameObject model = PhotonNetwork.Instantiate(_models[modelID].name, _playerObj.transform.position, Quaternion.identity);
         _animator = model.GetComponent<Animator>();
-        _animator.Play("Idle");
         _currentModel = modelID;
     }
 }

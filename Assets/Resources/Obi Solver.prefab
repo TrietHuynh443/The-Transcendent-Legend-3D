@@ -55,7 +55,7 @@ MonoBehaviour:
     gravity: {x: 0, y: -9.81, z: 0}
     ambientWind: {x: 0, y: 0, z: 0}
     foamGravityScale: 1
-    damping: 0
+    damping: 0.5
     maxAnisotropy: 3
     sleepThreshold: 0.0005
     maxVelocity: 50
