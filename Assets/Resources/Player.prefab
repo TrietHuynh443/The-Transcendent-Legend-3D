@@ -717,7 +717,7 @@ GameObject:
   - component: {fileID: 2874364757559795803}
   - component: {fileID: 1743767602806462761}
   - component: {fileID: 8740480541332693872}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -761,6 +761,7 @@ MonoBehaviour:
   - {fileID: 1075994102733596259, guid: fa8c0a7e923b90846823e9ea6f5a9799, type: 3}
   - {fileID: 3861275803261762678, guid: e7705b33911ff7e4bb3a7690a703ce58, type: 3}
   _playerObj: {fileID: 2328277177614876488}
+  _playerHeight: 2.4
 --- !u!114 &7631960775164260581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -892,7 +893,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -917,7 +918,7 @@ MonoBehaviour:
   thickness: 0
   inverted: 0
   material: {fileID: 0}
-  filter: -67174368
+  filter: -69271520
   m_SourceCollider: {fileID: 2874364757559795803}
   m_DistanceField: {fileID: 0}
 --- !u!114 &8740480541332693872

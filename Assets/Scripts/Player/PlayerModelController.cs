@@ -9,7 +9,7 @@ public class PlayerModelController : MonoBehaviour
     [SerializeField] private GameObject _playerObj;
     
     private Animator _animator;
-    private float _playerHeight;
+    [SerializeField] private float _playerHeight;
     public Animator Animator => _animator;
     public float PlayerHeight => _playerHeight;
 

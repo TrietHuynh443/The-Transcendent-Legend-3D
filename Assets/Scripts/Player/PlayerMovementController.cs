@@ -11,12 +11,12 @@ public class PlayerMovementController : MonoBehaviour
         Idle,
         Walk,
         Run,
-        Jump_Start,
-        Jump_Idle,
-        Jump_Land,
+        JumpStart,
+        JumpIdle,
+        JumpLand,
     }
     
-    private Dictionary<PlayerAnimationState, string> animationStateNames;
+    private Dictionary<PlayerAnimationState, string> _animationStateNames;
 
     [SerializeField] private Transform _orientation;
     
@@ -30,7 +30,6 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private float _airMultiplier;
     private bool _readyToJump = true;
     private bool _isInAir = false;
-    private bool _inJumpingState = false;
     private bool _isMoving = false;
     
     [Header("Keybinds")]
@@ -46,6 +45,7 @@ public class PlayerMovementController : MonoBehaviour
     private Vector3 _moveDirection;
     
     private Rigidbody _rb;
+    private Collider _collider;
     private PlayerModelController _playerModel;
     private PlayerAnimationState _prevAnimState = PlayerAnimationState.Idle;
     private PlayerAnimationState _animState = PlayerAnimationState.Idle;
@@ -53,23 +53,24 @@ public class PlayerMovementController : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         _rb.freezeRotation = true;
+        _collider = GetComponent<Collider>();
         _playerModel = GetComponent<PlayerModelController>();
         
-        animationStateNames = new Dictionary<PlayerAnimationState, string>
+        _animationStateNames = new Dictionary<PlayerAnimationState, string>
         {
             { PlayerAnimationState.Idle, "Idle" },
             { PlayerAnimationState.Walk, "Walk_A" },
             { PlayerAnimationState.Run, "Running_A" },
-            { PlayerAnimationState.Jump_Start, "Jump_Start" },
-            { PlayerAnimationState.Jump_Idle, "Jump_Idle" },
-            { PlayerAnimationState.Jump_Land, "Jump_Land" }
+            { PlayerAnimationState.JumpStart, "Jump_Start" },
+            { PlayerAnimationState.JumpIdle, "Jump_Idle" },
+            { PlayerAnimationState.JumpLand, "Jump_Land" }
         };
     }
 
     void Update()
     {
         //Ground check
-        _isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.05f, _groundLayer);
+        GroundCheck();
         
         MyInput();
         SpeedControl();
@@ -103,9 +104,14 @@ public class PlayerMovementController : MonoBehaviour
         MovePlayer();
     }
 
+    private void GroundCheck()
+    {
+        _isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.05f, _groundLayer);
+    }
+
     private bool IsAnimationPlaying(PlayerAnimationState state)
     {
-        return _playerModel.Animator.GetCurrentAnimatorStateInfo(0).IsName(animationStateNames[state]);
+        return _playerModel.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animationStateNames[state]);
     }
 
     private float AnimationTime()
@@ -121,22 +127,26 @@ public class PlayerMovementController : MonoBehaviour
 
     private void UpdateAnimation()
     {
-        if (IsAnimationPlaying(PlayerAnimationState.Jump_Start))
+        if (IsAnimationPlaying(PlayerAnimationState.JumpStart))
         {
             if (AnimationTime() >= 1)
             {
-                _animState = PlayerAnimationState.Jump_Idle;
+                _animState = PlayerAnimationState.JumpIdle;
             }
         }
-        else if (IsAnimationPlaying(PlayerAnimationState.Jump_Idle))
+        else if (IsAnimationPlaying(PlayerAnimationState.JumpIdle))
         {
-            
+            if (Mathf.Abs(_rb.velocity.y) < 0.01)
+            {
+                SetAnimation(PlayerAnimationState.JumpLand);
+            }
         }
-        else if (IsAnimationPlaying(PlayerAnimationState.Jump_Land))
+        else if (IsAnimationPlaying(PlayerAnimationState.JumpLand))
         {
-            if (AnimationTime() >= 1 || (_isGrounded && AnimationTime() >= 0.5))
+            if (AnimationTime() >= 1 || (_isGrounded && _isMoving && AnimationTime() >= 0.5))
             {
                 SetAnimation(_isMoving ? PlayerAnimationState.Run : PlayerAnimationState.Idle);
+                _readyToJump = true;
             }
         }
         else if (IsAnimationPlaying(PlayerAnimationState.Run))
@@ -156,7 +166,7 @@ public class PlayerMovementController : MonoBehaviour
 
         if (_prevAnimState != _animState)
         {
-            _playerModel.Animator.Play(animationStateNames[_animState]);
+            _playerModel.Animator.Play(_animationStateNames[_animState]);
         }
     }
 
@@ -167,12 +177,11 @@ public class PlayerMovementController : MonoBehaviour
 
         if (!_isGrounded && Mathf.Abs(_rb.velocity.y) < 0.01)
         {
-            _readyToJump = true;
-            if (_isInAir)
-            {
-                SetAnimation(PlayerAnimationState.Jump_Land);
-                _inJumpingState = false;               
-            }
+            // _readyToJump = true;
+            // if (_isInAir)
+            // {
+            //     SetAnimation(PlayerAnimationState.JumpLand);
+            // }
         }
 
         if (Input.GetKey(_jumpKey) && _readyToJump && _isGrounded)
@@ -213,6 +222,6 @@ public class PlayerMovementController : MonoBehaviour
         
         _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
         
-        SetAnimation(PlayerAnimationState.Jump_Start);
+        SetAnimation(PlayerAnimationState.JumpStart);
     }
 }
