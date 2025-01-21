@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using Manager;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RandomSplash : MonoBehaviour
 {
@@ -11,7 +13,7 @@ public class RandomSplash : MonoBehaviour
 
     private Queue<GameObject> vfxPool; // The object pool
     private RectTransform[] randPos; // Array of random positions as RectTransforms
-
+    
     void Start()
     {
         // Initialize random positions
@@ -32,6 +34,17 @@ public class RandomSplash : MonoBehaviour
             vfx.SetActive(false); // Start inactive
             vfxPool.Enqueue(vfx);
         }
+
+        StartCoroutine(LoadUIAndManagers());
+    }
+
+    private IEnumerator LoadUIAndManagers()
+    {
+        yield return new WaitForSeconds(vfxLifetime);
+        GameManager gameManager = GameManager.Instance;
+        var loadSceneOperation = SceneManager.LoadSceneAsync("UI");
+
+        yield return loadSceneOperation;
     }
 
     void Update()
@@ -57,10 +70,10 @@ public class RandomSplash : MonoBehaviour
             // Return to the pool after a delay
             StartCoroutine(ReturnToPoolAfterDelay(vfx, vfxLifetime));
         }
-        else
-        {
-            Debug.LogWarning("No available objects in the pool!");
-        }
+        // else
+        // {
+        //     Debug.LogWarning("No available objects in the pool!");
+        // }
 
     }
 

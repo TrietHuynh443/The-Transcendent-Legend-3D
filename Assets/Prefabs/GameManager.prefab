@@ -45,3 +45,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _fadeCanvasPrefab: {fileID: 3388198191874487122, guid: d52c19e53c456f147a8047d66e4e587b, type: 3}
+  _roomManagerPrefab: {fileID: 3230117841616628480, guid: 422ca77e8d0a3a84ba801ab5d255564b, type: 3}

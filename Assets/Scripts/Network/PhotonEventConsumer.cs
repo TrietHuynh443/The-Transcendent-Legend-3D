@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Network
 {
-    public class PhotonEventConsumer : MonoBehaviour
+    public class PhotonEventConsumer : UnitySingleton<PhotonEventConsumer>
     {
         private void OnEnable()
         {
@@ -19,6 +19,12 @@ namespace Network
             {
                 case GameEvent.WinningGame:
                     GameManager.Instance.LoadWinningScene();
+                    break;
+                case GameEvent.StartGame:
+                    GameManager.Instance.Play();
+                    break;
+                case GameEvent.JoinRoom:
+                    GameManager.Instance.IncreasePlayerNumber((int)payload.CustomData);
                     break;
             }
         }

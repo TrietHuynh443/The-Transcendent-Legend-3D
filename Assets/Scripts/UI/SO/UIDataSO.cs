@@ -6,5 +6,5 @@ using UnityEngine;
 public class UIDataSO : ScriptableObject
 {
     public string RoomName;
-    public string CharacterId;
+    public int CharacterId;
 }

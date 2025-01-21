@@ -40,7 +40,7 @@ namespace UI
                 Debug.Log($"{_roomNameText.text}");
 
                 UIManager.Instance.UIDataSO.RoomName = _roomNameText.text;
-                EventAggregator.Instance?.RaiseEvent(new OnUISubmitEvent()
+                EventAggregator.Instance.RaiseEvent(new OnUISubmitEvent()
                 {
                     SourceObject = gameObject,
                     TargetObject = UIManager.Instance.SelectCharacterUI,
