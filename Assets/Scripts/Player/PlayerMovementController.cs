@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 
-public class PlayerMovementController : MonoBehaviourPunCallbacks
+public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservable
 {
     [SerializeField] private Transform _orientation;
     
@@ -18,8 +18,12 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks
     private bool _readyToJump = true;
     private bool _isInAir = false;
     private bool _isMoving = false;
+    private bool _isGrounded = false;
+    private bool _isJumping = false;
+
     public bool IsMoving => _isMoving;
     public bool IsGrounded => _isGrounded;
+    public bool IsJumping => _isJumping;
     
     public Vector2 Velocity => _rb.velocity;
     
@@ -28,7 +32,6 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks
     
     [Header("Ground Check")]
     [SerializeField] private LayerMask _groundLayer;
-    private bool _isGrounded;
     
     private float _horizontalInput;
     private float _verticalInput;
@@ -48,19 +51,31 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks
         _playerAnim = GetComponent<PlayerAnimationController>();
     }
 
+    public void SetChainPosition(Vector3 velocity)
+    {
+        if (!_isMoving && !_isJumping)
+        {
+            _rb.velocity = velocity;
+        }
+    }
+
     void Update()
     {
         //Ground check
         GroundCheck();
-        
-        MyInput();
-        SpeedControl();
+
+        if (photonView.IsMine)
+        {
+            MyInput();
+            SpeedControl();
+        }
         
         //Handle drag
         if (_isGrounded)
         {
             _rb.drag = _groundDrag;
             _isInAir = false;
+            _isJumping = false;
         }
         else
         {
@@ -146,5 +161,22 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks
         _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
         
         _playerAnim.SetAnimation(PlayerAnimationController.PlayerAnimationState.JumpStart);
+        _isJumping = true;
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(_isMoving);
+            stream.SendNext(_isGrounded);
+            stream.SendNext(_isJumping);
+        }
+        else
+        {
+            _isMoving = (bool)stream.ReceiveNext();
+            _isGrounded = (bool)stream.ReceiveNext();
+            _isJumping = (bool)stream.ReceiveNext();
+        }
     }
 }

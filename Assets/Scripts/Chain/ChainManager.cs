@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class ChainManager : MonoBehaviourPunCallbacks
+public class ChainManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     [SerializeField] private GameObject _solverPrefab;
     [SerializeField] private GameObject _chainPrefab;
@@ -17,6 +17,8 @@ public class ChainManager : MonoBehaviourPunCallbacks
     private float _playerMidpointRate = 0.35f;
 
     [SerializeField] private float _maxBending = 0.02f;
+    [SerializeField] private float _chainLength = 5f;
+
 
     [Range(0, 15)] [SerializeField] private int _playerCategory = 5;
     [Range(0, 15)] [SerializeField] private int _chainCategory = 10;
@@ -73,15 +75,6 @@ public class ChainManager : MonoBehaviourPunCallbacks
             _controlPointMass, 0.1f, 1, filter, Color.white, "Player2 Attachment");
         blueprint.path.FlushEvents();
 
-        // Generate the rope's particle representation
-        yield return blueprint.Generate();
-
-        // Assign the blueprint to the rope
-        rope.ropeBlueprint = blueprint;
-
-        yield return new WaitForFixedUpdate();
-        yield return null;
-
         var attachment1 = rope.AddComponent<ObiParticleAttachment>();
         attachment1.target = player1.transform;
         attachment1.particleGroup = blueprint.groups[0];
@@ -90,7 +83,11 @@ public class ChainManager : MonoBehaviourPunCallbacks
         attachment2.target = player2.transform;
         attachment2.particleGroup = blueprint.groups[1];
 
-        if (player1.GetComponent<PhotonView>().IsMine)
+        ObiRopeCursor cursor = rope.GetComponent<ObiRopeCursor>();
+        cursor.ChangeLength(-rope.restLength);
+        cursor.ChangeLength(_chainLength);
+
+        if (photonView.IsMine)
         {
             attachment1.attachmentType = ObiParticleAttachment.AttachmentType.Dynamic;
             attachment2.attachmentType = ObiParticleAttachment.AttachmentType.Dynamic;
@@ -100,6 +97,15 @@ public class ChainManager : MonoBehaviourPunCallbacks
             attachment1.attachmentType = ObiParticleAttachment.AttachmentType.Static;
             attachment2.attachmentType = ObiParticleAttachment.AttachmentType.Static;
         }
+
+        // Generate the rope's particle representation
+        yield return blueprint.Generate();
+
+        // Assign the blueprint to the rope
+        rope.ropeBlueprint = blueprint;
+
+        // yield return new WaitForFixedUpdate();
+        // yield return null;
     }
 
     private GameObject FindPlayerById(int actorNumber)
@@ -187,6 +193,50 @@ public class ChainManager : MonoBehaviourPunCallbacks
         if (previousPlayer != null && nextPlayer != null)
         {
             CreateChain(previousPlayer, nextPlayer);
+        }
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(_chainsInv.Count);
+            foreach (var item in _chainsInv)
+            {
+                var (player1, player2) = item.Value;
+                GameObject player1Obj = FindPlayerById(player1.ActorNumber);
+                GameObject player2Obj = FindPlayerById(player2.ActorNumber);
+                stream.SendNext(player1.ActorNumber);
+                stream.SendNext(player2.ActorNumber);
+                stream.SendNext(player1Obj.GetComponent<Rigidbody>().velocity);
+                stream.SendNext(player2Obj.GetComponent<Rigidbody>().velocity);
+            }
+        }
+        else
+        {
+            int count = (int)stream.ReceiveNext();
+            for (int i = 0; i < count; i++)
+            {
+                int actorNumber1 = (int)stream.ReceiveNext();
+                int actorNumber2 = (int)stream.ReceiveNext();
+                Vector3 vel1 = (Vector3)stream.ReceiveNext();
+                Vector3 vel2 = (Vector3)stream.ReceiveNext();
+                
+                GameObject player1Obj = FindPlayerById(actorNumber1);
+                GameObject player2Obj = FindPlayerById(actorNumber2);
+
+                var player1Movement = player1Obj.GetComponent<PlayerMovementController>();
+                var player2Movement = player2Obj.GetComponent<PlayerMovementController>();
+
+                if (player1Obj.GetComponent<PhotonView>().IsMine)
+                {
+                    player1Movement.SetChainPosition(vel1);
+                }
+                else if (player2Obj.GetComponent<PhotonView>().IsMine)
+                {
+                    player2Movement.SetChainPosition(vel2);
+                }
+            }
         }
     }
 }

@@ -11,7 +11,7 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
     void Awake()
     {
         _controller = GetComponent<PlayerMovementController>();
-        _controller.enabled = false;
+        // _controller.enabled = false;
         
         _camera.SetActive(false);
     }

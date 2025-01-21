@@ -752,8 +752,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3642525437540443135}
   - {fileID: 1234829349680067486}
@@ -860,6 +860,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 2973934365800621052}
+  - {fileID: 7631960775164260581}
   - {fileID: 4462832907131832470}
   - {fileID: 7603081950474641690}
   - {fileID: 6065279225561031926}
@@ -1086,6 +1087,7 @@ GameObject:
   - component: {fileID: 7043714846814456635}
   - component: {fileID: 4075398268476612636}
   - component: {fileID: 2126596729326959725}
+  - component: {fileID: 2623430576152545713}
   m_Layer: 0
   m_Name: Player Camera
   m_TagString: Untagged
@@ -1233,3 +1235,33 @@ MonoBehaviour:
   - {fileID: 3931579498129010785}
   - {fileID: 2641899817243583244}
   - {fileID: 936669165982432545}
+--- !u!114 &2623430576152545713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8360485601184701552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e501d18bb52cf8c40b1853ca4904654f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_CollideAgainst:
+    serializedVersion: 2
+    m_Bits: 65
+  m_IgnoreTag: 
+  m_TransparentLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_MinimumDistanceFromTarget: 0.1
+  m_AvoidObstacles: 1
+  m_DistanceLimit: 0
+  m_MinimumOcclusionTime: 0
+  m_CameraRadius: 0.1
+  m_Strategy: 0
+  m_MaximumEffort: 4
+  m_SmoothingTime: 0
+  m_Damping: 0
+  m_DampingWhenOccluded: 0
+  m_OptimalTargetDistance: 0
