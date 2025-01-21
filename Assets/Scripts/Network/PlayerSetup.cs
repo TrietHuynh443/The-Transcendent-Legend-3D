@@ -32,7 +32,7 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
     {
         if (photonView.IsMine)
         {
-            _roomManager.GetComponent<PhotonView>().RPC("DeregisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.UserId);
+            _roomManager?.GetComponent<PhotonView>().RPC("DeregisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.UserId);
         }
     }
 }

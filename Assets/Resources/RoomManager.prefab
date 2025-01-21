@@ -49,6 +49,7 @@ MonoBehaviour:
   _playerPrefab: {fileID: 3321423579721061304, guid: 71e3d1a2976298c468c63cf1bffd5a88, type: 3}
   _spawnPoint: {fileID: 0}
   _players: []
+  _uiDataSO: {fileID: 11400000, guid: 90d7a6e6747966a419c63bae54669813, type: 2}
 --- !u!114 &9156736073344939151
 MonoBehaviour:
   m_ObjectHideFlags: 0
