@@ -19,11 +19,9 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
     private bool _isInAir = false;
     private bool _isMoving = false;
     private bool _isGrounded = false;
-    private bool _isJumping = false;
 
     public bool IsMoving => _isMoving;
     public bool IsGrounded => _isGrounded;
-    public bool IsJumping => _isJumping;
     
     public Vector2 Velocity => _rb.velocity;
     
@@ -53,7 +51,7 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
 
     public void SetChainPosition(Vector3 velocity)
     {
-        if (!_isMoving && !_isJumping)
+        if (!_isMoving && _isGrounded)
         {
             _rb.velocity = velocity;
         }
@@ -75,7 +73,6 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
         {
             _rb.drag = _groundDrag;
             _isInAir = false;
-            _isJumping = false;
         }
         else
         {
@@ -105,7 +102,11 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
 
     private void GroundCheck()
     {
-        _isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.05f, _groundLayer);
+        // _isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.05f, _groundLayer);
+
+        // RaycastHit hit;
+        // // _isGrounded = Physics.SphereCast(transform.position + _collider.bounds.center, _collider.bounds.extents.y, Vector3.down, out hit, 1f, _groundLayer);
+        _isGrounded = Physics.BoxCast(_collider.bounds.center, _collider.bounds.extents / 2, Vector3.down, Quaternion.identity, _collider.bounds.extents.y / 2 + 0.5f, _groundLayer);
     }
 
     private void MyInput()
@@ -161,7 +162,6 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
         _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
         
         _playerAnim.SetAnimation(PlayerAnimationController.PlayerAnimationState.JumpStart);
-        _isJumping = true;
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -170,13 +170,11 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
         {
             stream.SendNext(_isMoving);
             stream.SendNext(_isGrounded);
-            stream.SendNext(_isJumping);
         }
         else
         {
             _isMoving = (bool)stream.ReceiveNext();
             _isGrounded = (bool)stream.ReceiveNext();
-            _isJumping = (bool)stream.ReceiveNext();
         }
     }
 }

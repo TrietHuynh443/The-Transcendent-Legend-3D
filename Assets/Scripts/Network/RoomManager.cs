@@ -39,7 +39,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("Network: Joined Room");
         
-        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount - 1;
         
         GameObject player = PhotonNetwork.Instantiate(_playerPrefab.name, _spawnPoint.position + Vector3.forward * (playerCount * 5f), Quaternion.identity);
         player.GetComponent<PlayerSetup>().IsLocalPlayer();
