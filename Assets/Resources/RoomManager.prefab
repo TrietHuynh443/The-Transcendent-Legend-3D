@@ -48,7 +48,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerPrefab: {fileID: 3321423579721061304, guid: 71e3d1a2976298c468c63cf1bffd5a88, type: 3}
   _spawnPoint: {fileID: 0}
-  _players: []
 --- !u!114 &9156736073344939151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,6 +63,7 @@ MonoBehaviour:
   _solverPrefab: {fileID: 150954641210926487, guid: 704113a991e4c4d4bbd493bda532c079, type: 3}
   _chainPrefab: {fileID: 6427763570494553669, guid: 240fbad2411d1054388dbd658afb4fd8, type: 3}
   _playerMidpointRate: 0.2
+  _maxBending: 0.04
   _playerCategory: 5
   _chainCategory: 10
   _controlPointMass: 0.01

@@ -676,6 +676,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1234829349680067486}
+  - component: {fileID: 6065279225561031926}
   m_Layer: 0
   m_Name: Player Obj
   m_TagString: Untagged
@@ -698,6 +699,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3527981190921436032}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6065279225561031926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2328277177614876488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 0
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 0
+  m_UseLocal: 0
 --- !u!1 &3321423579721061304
 GameObject:
   m_ObjectHideFlags: 0
@@ -708,6 +725,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3527981190921436032}
   - component: {fileID: 1539699976077173112}
+  - component: {fileID: 2973934365800621052}
   - component: {fileID: 7631960775164260581}
   - component: {fileID: 8844232035767611939}
   - component: {fileID: 4252353054339358031}
@@ -762,6 +780,18 @@ MonoBehaviour:
   - {fileID: 3861275803261762678, guid: e7705b33911ff7e4bb3a7690a703ce58, type: 3}
   _playerObj: {fileID: 2328277177614876488}
   _playerHeight: 2.4
+--- !u!114 &2973934365800621052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3321423579721061304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc267329338d4c9386af1e0238f1cafd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &7631960775164260581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -777,8 +807,7 @@ MonoBehaviour:
   _orientation: {fileID: 7190357621626861975}
   _moveSpeed: 7
   _groundDrag: 5
-  _jumpForce: 8
-  _jumpCooldown: 0.25
+  _jumpForce: 20
   _airMultiplier: 0.4
   _jumpKey: 32
   _groundLayer:
@@ -830,9 +859,10 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
+  - {fileID: 2973934365800621052}
   - {fileID: 4462832907131832470}
   - {fileID: 7603081950474641690}
-  - {fileID: 0}
+  - {fileID: 6065279225561031926}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0

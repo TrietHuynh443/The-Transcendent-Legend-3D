@@ -10,8 +10,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject _playerPrefab;
     [Space]
     [SerializeField] private Transform _spawnPoint;
-
-    [SerializeField] private Dictionary<(Player, Player), GameObject> _chains = new Dictionary<(Player, Player), GameObject>();
     
     private ChainManager _chainManager;
     // Start is called before the first frame update
@@ -50,7 +48,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player player)
     {
-        Debug.Log("Network: Left Room");
+        Debug.Log("Network: Left Room " + player.ActorNumber);
         
         photonView.RPC("UnregisterPlayer", RpcTarget.AllBuffered, player);
     }
@@ -61,7 +59,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("Network: Registering Player " + player.ActorNumber);
         
-        _chainManager.CreateChainForPlayer(player);
+        _chainManager.UpdateChainPlayerJoin(player);
     }
 
     [PunRPC]
@@ -69,6 +67,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("Network: Unregister Player " + player.ActorNumber);
         
-        _chainManager.DestroyChainForPlayer(player);
+        _chainManager.UpdateChainForPlayerLeave(player);
     }
 }
