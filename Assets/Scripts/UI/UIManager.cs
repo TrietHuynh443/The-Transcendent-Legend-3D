@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
+using Photon.Pun;
+using TMPro;
 using UI.Event;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace UI
 {
@@ -12,6 +16,9 @@ namespace UI
         [SerializeField] private GameObject _selectRoomUI;
         [SerializeField] private GameObject _popupCanvasObjectPrefabs;
         [SerializeField] private UIDataSO _uiDataSO;
+        [SerializeField] private GameObject _roomInfoUI;
+        [SerializeField] private TextMeshProUGUI _playerCount;
+        // [SerializeField] private Button _selectCharacterButton;
         public UIDataSO UIDataSO => _uiDataSO;
         private Queue<GameObject> _popupPool = new Queue<GameObject>();
 
@@ -20,17 +27,25 @@ namespace UI
 
         public GameObject SelectCharacterUI => _selectCharacterUI;
         public GameObject SelectRoomUI => _selectRoomUI;
+        public GameObject RoomInfoUI => _roomInfoUI;
         public void OnEnable()
         {
             EventAggregator.Instance?.AddEventListener<OnPopupEvent>(Popup);
             EventAggregator.Instance?.AddEventListener<OnUISubmitEvent>(UISubmit);
+            EventAggregator.Instance?.AddEventListener<PlayerJoinRoomEvent>(Refresh);
         }
+
+        private void Refresh(PlayerJoinRoomEvent evt)
+        {
+            _playerCount.text =$"Number Player: {PhotonNetwork.CurrentRoom.PlayerCount}";
+        }
+
 
         private void UISubmit(OnUISubmitEvent evt)
         {
             MakeAnimationTransition(evt.SourceObject, evt.TargetObject, evt.AnimationTransitionType);
         }
-
+        
         private void MakeAnimationTransition(GameObject evtSourceObject, GameObject evtTargetObject,
             EAnimationType evtAnimationTransitionType)
         {

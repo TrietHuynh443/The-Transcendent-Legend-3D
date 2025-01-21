@@ -9,7 +9,12 @@ namespace UI.Event
 
     public class SubmitCharacterEvent : IEvent
     {
-        public string CharacterName { get; set; } = string.Empty;
+        public int CharacterId { get; set; }
+        public string RoomName { get; set; } = string.Empty;
+    }
+
+    public class PlayerJoinRoomEvent : IEvent
+    {
     }
 
     public enum EPopupType

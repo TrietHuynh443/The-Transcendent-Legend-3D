@@ -8,6 +8,7 @@ namespace UI
     {
         // [SerializeField] private Button[] _characterButtons;
         [SerializeField] private Button _submitCharacterButton;
+        [SerializeField] private UIDataSO _uiDataSO;
         // Start is called before the first frame update
         private void OnEnable()
         {
@@ -23,8 +24,20 @@ namespace UI
         {
             if (ButtonSelectionHandler.SelectedButton != null)
             {
-                UIManager.Instance.UIDataSO.CharacterId = ButtonSelectionHandler.SelectedButton.GetInstanceID().ToString();
-                EventAggregator.Instance?.RaiseEvent(new SubmitCharacterEvent());
+                UIManager.Instance.UIDataSO.CharacterId = ButtonSelectionHandler.SelectedButton.transform.GetSiblingIndex();
+                _uiDataSO.CharacterId = ButtonSelectionHandler.SelectedButton.transform.GetSiblingIndex();
+                EventAggregator.Instance?.RaiseEvent(new SubmitCharacterEvent()
+                {
+                    CharacterId = _uiDataSO.CharacterId,
+                    RoomName = _uiDataSO.RoomName
+                });
+                EventAggregator.Instance?.RaiseEvent(new OnUISubmitEvent()
+                {
+                    SourceObject = gameObject,
+                    TargetObject = UIManager.Instance.RoomInfoUI,
+                    AnimationTransitionType = EAnimationType.Swipe
+                });
+                Debug.Log($"Network: Connecting {ButtonSelectionHandler.SelectedButton.transform.GetSiblingIndex()} {_uiDataSO.RoomName}");
             }
             else
             {
