@@ -7,7 +7,6 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
 {
     private PlayerMovementController _controller;
     [SerializeField] private GameObject _camera;
-    private RoomManager _roomManager;
 
     void Awake()
     {
@@ -15,7 +14,6 @@ public class PlayerSetup : MonoBehaviourPunCallbacks
         _controller.enabled = false;
         
         _camera.SetActive(false);
-        _roomManager = FindObjectOfType<RoomManager>();
     }
 
     public void IsLocalPlayer()
