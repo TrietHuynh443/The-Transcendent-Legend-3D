@@ -79,7 +79,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
         // if(_photonView.IsMine)
         PhotonRaiseEventHandler.Instance.RaiseJoinRoomEvent();
         // EventAggregator.Instance.RaiseEvent(new PlayerJoinRoomEvent());
-        photonView.RPC("RegisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer);
+        // photonView.RPC("RegisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer);
     }
 
     private void InitAvatar(GameObject player)
