@@ -752,7 +752,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 0.36, y: 0.36, z: 0.36}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3642525437540443135}
@@ -780,6 +780,7 @@ MonoBehaviour:
   - {fileID: 3861275803261762678, guid: e7705b33911ff7e4bb3a7690a703ce58, type: 3}
   _playerObj: {fileID: 2328277177614876488}
   _playerHeight: 2.4
+  _uiDataSO: {fileID: 11400000, guid: 90d7a6e6747966a419c63bae54669813, type: 2}
 --- !u!114 &2973934365800621052
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -805,14 +806,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _orientation: {fileID: 7190357621626861975}
-  _moveSpeed: 7
-  _groundDrag: 5
-  _jumpForce: 16
+  _moveSpeed: 8
+  _groundDrag: 6
+  _jumpForce: 17
   _airMultiplier: 0.4
   _jumpKey: 32
   _groundLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 320
 --- !u!54 &8844232035767611939
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1254,7 +1255,7 @@ MonoBehaviour:
   m_TransparentLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_MinimumDistanceFromTarget: 2
+  m_MinimumDistanceFromTarget: 1
   m_AvoidObstacles: 1
   m_DistanceLimit: 0
   m_MinimumOcclusionTime: 0

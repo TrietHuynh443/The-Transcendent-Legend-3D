@@ -51,7 +51,7 @@ public class ChainManager : MonoBehaviourPunCallbacks, IPunObservable
 
         // Create a new blueprint for the rope
         ObiRopeBlueprint blueprint = ScriptableObject.CreateInstance<ObiRopeBlueprint>();
-        blueprint.resolution = 0.5f;
+        blueprint.resolution = 1.0f;
 
         // Calculate the desired attachment points (midpoints of players)
         Vector3 attachmentPoint1 = player1.transform.position;

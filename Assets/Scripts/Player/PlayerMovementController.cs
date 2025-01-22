@@ -14,7 +14,6 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
     [SerializeField] private float _groundDrag;
     
     [SerializeField] private float _jumpForce;
-    [SerializeField] private float _jumpCooldown;
     [SerializeField] private float _airMultiplier;
     private bool _readyToJump = true;
     private bool _isInAir = false;
@@ -107,7 +106,7 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
 
         // RaycastHit hit;
         // // _isGrounded = Physics.SphereCast(transform.position + _collider.bounds.center, _collider.bounds.extents.y, Vector3.down, out hit, 1f, _groundLayer);
-        _isGrounded = Physics.BoxCast(_collider.bounds.center, _collider.bounds.extents / 2, Vector3.down, Quaternion.identity, _collider.bounds.extents.y / 2 + 0.5f, _groundLayer);
+        _isGrounded = Physics.BoxCast(_collider.bounds.center, _collider.bounds.extents / 1.5f, Vector3.down, Quaternion.identity, _collider.bounds.extents.y / 2 + 0.5f, _groundLayer);
     }
 
     private void MyInput()

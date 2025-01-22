@@ -50,7 +50,8 @@ public class PlayerAnimationController : MonoBehaviourPunCallbacks, IPunObservab
 
     private bool IsAnimationPlaying(PlayerAnimationState state)
     {
-        return _playerModel.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animationStateNames[state]);
+        return _animState == state;
+        // return _playerModel.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animationStateNames[state]);
     }
 
     private float AnimationTime()
@@ -70,12 +71,12 @@ public class PlayerAnimationController : MonoBehaviourPunCallbacks, IPunObservab
         {
             if (AnimationTime() >= 1)
             {
-                _animState = PlayerAnimationState.JumpIdle;
+                SetAnimation(PlayerAnimationState.JumpIdle);
             }
         }
         else if (IsAnimationPlaying(PlayerAnimationState.JumpIdle))
         {
-            if (Mathf.Abs(_playerMovement.Velocity.y) < 0.01)
+            if (_playerMovement.IsGrounded || Mathf.Abs(_playerMovement.Velocity.y) < 0.01)
             {
                 SetAnimation(PlayerAnimationState.JumpLand);
             }
@@ -84,8 +85,8 @@ public class PlayerAnimationController : MonoBehaviourPunCallbacks, IPunObservab
         {
             if (AnimationTime() >= 1 || (_playerMovement.IsGrounded && _playerMovement.IsMoving && AnimationTime() >= 0.5))
             {
-                SetAnimation(_playerMovement.IsMoving ? PlayerAnimationState.Run : PlayerAnimationState.Idle);
                 _playerMovement.SetReadyToJump(true);
+                SetAnimation(_playerMovement.IsMoving ? PlayerAnimationState.Run : PlayerAnimationState.Idle);
             }
         }
         else if (IsAnimationPlaying(PlayerAnimationState.Run))

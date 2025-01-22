@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 9171043974412605146}
   - component: {fileID: 1929737898654925818}
   - component: {fileID: 4270260920500191789}
-  - component: {fileID: 9156736073344939151}
   m_Layer: 0
   m_Name: RoomManager
   m_TagString: Untagged
@@ -34,44 +33,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4270260920500191789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3230117841616628480}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 123811759cf2283418e1898340e111a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _playerPrefab: {fileID: 3321423579721061304, guid: 71e3d1a2976298c468c63cf1bffd5a88,
-    type: 3}
-  _spawnPoint: {fileID: 0}
-  _uiDataSO: {fileID: 11400000, guid: 90d7a6e6747966a419c63bae54669813, type: 2}
---- !u!114 &9156736073344939151
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3230117841616628480}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 931a36d82e5b6f342a38c3654cd49085, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _solverPrefab: {fileID: 150954641210926487, guid: 704113a991e4c4d4bbd493bda532c079,
-    type: 3}
-  _chainPrefab: {fileID: 6427763570494553669, guid: 240fbad2411d1054388dbd658afb4fd8,
-    type: 3}
-  _playerMidpointRate: 0.2
-  _maxBending: 0.04
-  _chainLength: 5
-  _playerCategory: 5
-  _chainCategory: 10
-  _controlPointMass: 0.01
 --- !u!114 &1929737898654925818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90,7 +51,22 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents: [{fileID: 9156736073344939151}]
+  ObservedComponents: []
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &4270260920500191789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3230117841616628480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 123811759cf2283418e1898340e111a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _playerPrefab: {fileID: 3321423579721061304, guid: 71e3d1a2976298c468c63cf1bffd5a88, type: 3}
+  _players: []
+  _uiDataSO: {fileID: 11400000, guid: 90d7a6e6747966a419c63bae54669813, type: 2}

@@ -23,15 +23,20 @@ public class PlayerModelController : MonoBehaviourPunCallbacks
         int currentPlayerCount = PhotonNetwork.CurrentRoom.PlayerCount;
         if (photonView.IsMine)
         {
-            photonView.RPC("SetModel", RpcTarget.AllBuffered, _uiDataSO.CharacterId % _models.Count);
+            photonView.RPC("SetModel", RpcTarget.AllBuffered, _uiDataSO.CharacterId);
         }
+        _playerHeight = GetComponent<CapsuleCollider>().height * transform.localScale.y;
     }
 
     [PunRPC]
     public void SetModel(int modelID)
     {
-        if (modelID < 0 || modelID >= _models.Count)
+        if (modelID < 0)
             modelID = 0;
+        else if (modelID >= _models.Count)
+        {
+            modelID = modelID % _models.Count;
+        }
         
         foreach (Transform child in _playerObj.transform)
         {

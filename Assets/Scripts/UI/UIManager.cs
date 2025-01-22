@@ -50,6 +50,7 @@ namespace UI
             if (GameManager.Instance != null && GameManager.Instance.IsMaster)
             {
                 _playButton.interactable = true;
+                _playButton.onClick.RemoveAllListeners();
                 _playButton.onClick.AddListener(PlayClick);
             }
             else
