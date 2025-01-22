@@ -18,6 +18,7 @@ namespace Manager
         private EventAggregator _eventAggregator;
         public int PlayerCount = 0;
         public RoomManager RoomManager => _roomManager;
+        [SerializeField] private bool _testRoom = false;
         public bool IsMaster { get; set; } = false;
 
         protected override void SingletonStarted()
@@ -27,6 +28,7 @@ namespace Manager
             _fadeCanvasGroup = fadeCanvas.GetComponent<CanvasGroup>();
             fadeCanvas.SetActive(false);
             _roomManager = Instantiate(_roomManagerPrefab).GetComponent<RoomManager>();
+            _roomManager.SetTestRoom(_testRoom);
             _photonRaiseEventHandle = PhotonRaiseEventHandler.Instance;
             _photonEventConsumer = PhotonEventConsumer.Instance;
             _eventAggregator = EventAggregator.Instance;

@@ -12,18 +12,27 @@ public class RoomManager : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject _playerPrefab;
     [Space]
     
-    [SerializeField]  private List<GameObject> _players = new List<GameObject>();
     [SerializeField] private UIDataSO _uiDataSO;
-    public int CurrentPlayersCount => _players.Count;
     
     private RoomChainedManager _roomChainedManager;
+    private bool _testRoom = false; 
 
     // Start is called before the first frame update
     void Start()
     {
         Debug.Log("Network: Connecting");
-        // PhotonNetwork.ConnectUsingSettings();
+        
         DontDestroyOnLoad(gameObject);
+    }
+
+    public void SetTestRoom(bool enable)
+    {
+        _testRoom = enable;
+
+        if (_testRoom)
+        {
+            PhotonNetwork.ConnectUsingSettings();
+        }
     }
 
     public override void OnEnable()
@@ -44,6 +53,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
         PhotonNetwork.ConnectUsingSettings();
     }
     
+    
     public void ConnectRoom()
     {
         Debug.Log("RoomManager/ConnectRoom");
@@ -51,10 +61,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
         _roomChainedManager = FindObjectOfType<RoomChainedManager>();
         GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("SpawnPoint");
         
-        Transform spawnPoint = spawnPoints[PhotonNetwork.LocalPlayer.ActorNumber % 4].transform;
-        Vector3 pos = Vector3.forward * (_players.Count * 5f);
-        pos = spawnPoint == null ? pos  : pos + spawnPoint.position;
-        GameObject player = PhotonNetwork.Instantiate(_playerPrefab.name, pos, Quaternion.identity);
+        Transform spawnPoint = spawnPoints[PhotonNetwork.LocalPlayer.ActorNumber % spawnPoints.Length].transform;
+        GameObject player = PhotonNetwork.Instantiate(_playerPrefab.name, spawnPoint.position, Quaternion.identity);
         InitAvatar(player);
         player.GetComponent<PlayerSetup>().IsLocalPlayer();;
         _roomChainedManager.PlayerJoinRoom();
@@ -71,7 +79,14 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("Network: Joined Lobby");
 
-        PhotonNetwork.JoinOrCreateRoom(_uiDataSO.RoomName, null, null);
+        if (_testRoom)
+        {
+            PhotonNetwork.JoinOrCreateRoom("Test Room", null, null);
+        }
+        else
+        {
+            PhotonNetwork.JoinOrCreateRoom(_uiDataSO.RoomName, null, null);
+        }
     }
 
     public override void OnJoinedRoom()
@@ -79,6 +94,11 @@ public class RoomManager : MonoBehaviourPunCallbacks
         Debug.Log("RoomManager/OnJoinedRoom");
         // if(_photonView.IsMine)
         PhotonRaiseEventHandler.Instance.RaiseJoinRoomEvent();
+
+        if (_testRoom)
+        {
+            ConnectRoom();
+        }
         // EventAggregator.Instance.RaiseEvent(new PlayerJoinRoomEvent()
         // photonView.RPC("RegisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer);
     }

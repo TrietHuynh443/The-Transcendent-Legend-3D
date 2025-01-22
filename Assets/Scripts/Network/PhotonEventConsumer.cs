@@ -21,7 +21,6 @@ namespace Network
                     GameManager.Instance.LoadWinningScene();
                     break;
                 case GameEvent.StartGame:
-                    Debug.Log("Consumed Play Event");
                     GameManager.Instance.Play();
                     break;
                 case GameEvent.JoinRoom:
