@@ -62,6 +62,11 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
         _jumpForce = force;
     }
 
+    public void SetMoveSpeed(float speed)
+    {
+        _moveSpeed = speed;
+    }
+
     void Update()
     {
         //Ground check
