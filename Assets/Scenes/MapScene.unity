@@ -1918,6 +1918,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _jumpForce: 15
   _moveSpeed: 4
+--- !u!65 &825349632
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825349629}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 14.683838, y: 23.006344, z: 29.628477}
+  m_Center: {x: -5.694166, y: 13.877436, z: -0.5864916}
 --- !u!1 &826414316 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9069838707317633488, guid: 511ef87dd6cf57842a842aa61f6a69df, type: 3}
@@ -3229,10 +3250,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03bc3d5d41943da4c9e37e8978ae2575, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camTransform: {fileID: 0}
-  shakeDuration: 5
-  shakeAmount: 0.1
-  decreaseFactor: 1
 --- !u!114 &1425617922
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6324,6 +6341,9 @@ PrefabInstance:
       insertIndex: 8
       addedObject: {fileID: 1777978485}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3598677026455708344, guid: 511ef87dd6cf57842a842aa61f6a69df, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 825349632}
     - targetCorrespondingSourceObject: {fileID: 3598677026455708344, guid: 511ef87dd6cf57842a842aa61f6a69df, type: 3}
       insertIndex: -1
       addedObject: {fileID: 825349631}
