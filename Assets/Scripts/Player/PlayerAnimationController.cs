@@ -79,6 +79,7 @@ public class PlayerAnimationController : MonoBehaviourPunCallbacks, IPunObservab
             if (_playerMovement.IsGrounded || Mathf.Abs(_playerMovement.Velocity.y) < 0.01)
             {
                 SetAnimation(PlayerAnimationState.JumpLand);
+                AudioManager.Instance.PlaySFX("Land");
             }
         }
         else if (IsAnimationPlaying(PlayerAnimationState.JumpLand))
