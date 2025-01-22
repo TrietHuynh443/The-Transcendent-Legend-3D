@@ -55,6 +55,7 @@ namespace Manager
 
         public void Play()
         {
+            Debug.Log("Play");
             _fadeCanvasGroup.gameObject.SetActive(true);
             _fadeCanvasGroup.DOFade(1, 1.0f).OnComplete(() =>
             {

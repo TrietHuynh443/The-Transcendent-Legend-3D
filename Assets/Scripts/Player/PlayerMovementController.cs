@@ -1,23 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
-public class PlayerMovementController : MonoBehaviour
+public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservable
 {
-    enum PlayerAnimationState
-    {
-        None,
-        Idle,
-        Walk,
-        Run,
-        JumpStart,
-        JumpIdle,
-        JumpLand,
-    }
-    
-    private Dictionary<PlayerAnimationState, string> _animationStateNames;
-
     [SerializeField] private Transform _orientation;
     
     [Header("Movement")]
@@ -26,18 +14,22 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private float _groundDrag;
     
     [SerializeField] private float _jumpForce;
-    [SerializeField] private float _jumpCooldown;
     [SerializeField] private float _airMultiplier;
     private bool _readyToJump = true;
     private bool _isInAir = false;
     private bool _isMoving = false;
+    private bool _isGrounded = false;
+
+    public bool IsMoving => _isMoving;
+    public bool IsGrounded => _isGrounded;
+    
+    public Vector2 Velocity => _rb.velocity;
     
     [Header("Keybinds")]
     [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
     
     [Header("Ground Check")]
     [SerializeField] private LayerMask _groundLayer;
-    private bool _isGrounded;
     
     private float _horizontalInput;
     private float _verticalInput;
@@ -47,33 +39,34 @@ public class PlayerMovementController : MonoBehaviour
     private Rigidbody _rb;
     private Collider _collider;
     private PlayerModelController _playerModel;
-    private PlayerAnimationState _prevAnimState = PlayerAnimationState.Idle;
-    private PlayerAnimationState _animState = PlayerAnimationState.Idle;
+    private PlayerAnimationController _playerAnim;
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
         _rb.freezeRotation = true;
         _collider = GetComponent<Collider>();
         _playerModel = GetComponent<PlayerModelController>();
-        
-        _animationStateNames = new Dictionary<PlayerAnimationState, string>
+        _playerAnim = GetComponent<PlayerAnimationController>();
+    }
+
+    public void SetChainPosition(Vector3 velocity)
+    {
+        if (!_isMoving && _isGrounded)
         {
-            { PlayerAnimationState.Idle, "Idle" },
-            { PlayerAnimationState.Walk, "Walk_A" },
-            { PlayerAnimationState.Run, "Running_A" },
-            { PlayerAnimationState.JumpStart, "Jump_Start" },
-            { PlayerAnimationState.JumpIdle, "Jump_Idle" },
-            { PlayerAnimationState.JumpLand, "Jump_Land" }
-        };
+            _rb.velocity = velocity;
+        }
     }
 
     void Update()
     {
         //Ground check
         GroundCheck();
-        
-        MyInput();
-        SpeedControl();
+
+        if (photonView.IsMine)
+        {
+            MyInput();
+            SpeedControl();
+        }
         
         //Handle drag
         if (_isGrounded)
@@ -95,8 +88,11 @@ public class PlayerMovementController : MonoBehaviour
         {
             _isMoving = false;
         }
+    }
 
-        UpdateAnimation();
+    public void SetReadyToJump(bool ready)
+    {
+        _readyToJump = ready;
     }
 
     void FixedUpdate()
@@ -106,71 +102,11 @@ public class PlayerMovementController : MonoBehaviour
 
     private void GroundCheck()
     {
-        _isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.05f, _groundLayer);
-    }
+        // _isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.05f, _groundLayer);
 
-    private bool IsAnimationPlaying(PlayerAnimationState state)
-    {
-        return _playerModel.Animator.GetCurrentAnimatorStateInfo(0).IsName(_animationStateNames[state]);
-    }
-
-    private float AnimationTime()
-    {
-        return _playerModel.Animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
-    }
-
-    private void SetAnimation(PlayerAnimationState state)
-    {
-        _prevAnimState = _animState;
-        _animState = state;
-    }
-
-    private void UpdateAnimation()
-    {
-        if (IsAnimationPlaying(PlayerAnimationState.JumpStart))
-        {
-            if (AnimationTime() >= 1)
-            {
-                _animState = PlayerAnimationState.JumpIdle;
-            }
-        }
-        else if (IsAnimationPlaying(PlayerAnimationState.JumpIdle))
-        {
-            if (Mathf.Abs(_rb.velocity.y) < 0.01)
-            {
-                SetAnimation(PlayerAnimationState.JumpLand);
-                Debug.Log("Land");
-                AudioManager.Instance.PlaySFX("Land");
-            }
-        }
-        else if (IsAnimationPlaying(PlayerAnimationState.JumpLand))
-        {
-            if (AnimationTime() >= 1 || (_isGrounded && _isMoving && AnimationTime() >= 0.5))
-            {
-                SetAnimation(_isMoving ? PlayerAnimationState.Run : PlayerAnimationState.Idle);
-                _readyToJump = true;
-            }
-        }
-        else if (IsAnimationPlaying(PlayerAnimationState.Run))
-        {
-            if (!_isMoving)
-            {
-                SetAnimation(PlayerAnimationState.Idle);
-
-            }
-        }
-        else if (IsAnimationPlaying(PlayerAnimationState.Idle))
-        {
-            if (_isMoving)
-            {
-                SetAnimation(PlayerAnimationState.Run);
-            }
-        }
-
-        if (_prevAnimState != _animState)
-        {
-            _playerModel.Animator.Play(_animationStateNames[_animState]);
-        }
+        // RaycastHit hit;
+        // // _isGrounded = Physics.SphereCast(transform.position + _collider.bounds.center, _collider.bounds.extents.y, Vector3.down, out hit, 1f, _groundLayer);
+        _isGrounded = Physics.BoxCast(_collider.bounds.center, _collider.bounds.extents / 1.5f, Vector3.down, Quaternion.identity, _collider.bounds.extents.y / 2 + 0.5f, _groundLayer);
     }
 
     private void MyInput()
@@ -225,6 +161,20 @@ public class PlayerMovementController : MonoBehaviour
         
         _rb.AddForce(transform.up * _jumpForce, ForceMode.Impulse);
         
-        SetAnimation(PlayerAnimationState.JumpStart);
+        _playerAnim.SetAnimation(PlayerAnimationController.PlayerAnimationState.JumpStart);
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(_isMoving);
+            stream.SendNext(_isGrounded);
+        }
+        else
+        {
+            _isMoving = (bool)stream.ReceiveNext();
+            _isGrounded = (bool)stream.ReceiveNext();
+        }
     }
 }
