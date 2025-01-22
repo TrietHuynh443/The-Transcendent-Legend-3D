@@ -762,6 +762,7 @@ MonoBehaviour:
   - {fileID: 3861275803261762678, guid: e7705b33911ff7e4bb3a7690a703ce58, type: 3}
   _playerObj: {fileID: 2328277177614876488}
   _playerHeight: 2.4
+  _uiDataSO: {fileID: 11400000, guid: 90d7a6e6747966a419c63bae54669813, type: 2}
 --- !u!114 &7631960775164260581
 MonoBehaviour:
   m_ObjectHideFlags: 0

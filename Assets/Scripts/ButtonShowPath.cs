@@ -19,6 +19,7 @@ public class ButtonShowPath : MonoBehaviour
 
     void OnTriggerEnter()
     {
+        AudioManager.Instance.PlaySFX("ButtonPress");
         path.SetActive(true);
         
         // Set transform of position y lower than 0.5

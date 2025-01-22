@@ -139,6 +139,8 @@ public class PlayerMovementController : MonoBehaviour
             if (Mathf.Abs(_rb.velocity.y) < 0.01)
             {
                 SetAnimation(PlayerAnimationState.JumpLand);
+                Debug.Log("Land");
+                AudioManager.Instance.PlaySFX("Land");
             }
         }
         else if (IsAnimationPlaying(PlayerAnimationState.JumpLand))
@@ -154,6 +156,7 @@ public class PlayerMovementController : MonoBehaviour
             if (!_isMoving)
             {
                 SetAnimation(PlayerAnimationState.Idle);
+
             }
         }
         else if (IsAnimationPlaying(PlayerAnimationState.Idle))

@@ -19,6 +19,8 @@ public class Exit : MonoBehaviour
 
     void OnTriggerEnter()
     {
+        AudioManager.Instance.musicSource.Stop();
+        AudioManager.Instance.PlayMusic("Win");
         canvas.gameObject.SetActive(true);
     }
 }

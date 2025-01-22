@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
+using Manager;
 using Photon.Pun;
 using TMPro;
 using UI.Event;
@@ -18,6 +19,8 @@ namespace UI
         [SerializeField] private UIDataSO _uiDataSO;
         [SerializeField] private GameObject _roomInfoUI;
         [SerializeField] private TextMeshProUGUI _playerCount;
+
+        [SerializeField] private Button _playButton;
         // [SerializeField] private Button _selectCharacterButton;
         public UIDataSO UIDataSO => _uiDataSO;
         private Queue<GameObject> _popupPool = new Queue<GameObject>();
@@ -33,11 +36,26 @@ namespace UI
             EventAggregator.Instance?.AddEventListener<OnPopupEvent>(Popup);
             EventAggregator.Instance?.AddEventListener<OnUISubmitEvent>(UISubmit);
             EventAggregator.Instance?.AddEventListener<PlayerJoinRoomEvent>(Refresh);
+            _playButton.interactable = false;
+        }
+
+        private void PlayClick()
+        {
+            PhotonRaiseEventHandler.Instance.RaisePlayEvent();
         }
 
         private void Refresh(PlayerJoinRoomEvent evt)
         {
             _playerCount.text =$"Number Player: {PhotonNetwork.CurrentRoom.PlayerCount}";
+            if (GameManager.Instance != null && GameManager.Instance.IsMaster)
+            {
+                _playButton.interactable = true;
+                _playButton.onClick.AddListener(PlayClick);
+            }
+            else
+            {
+                _playButton.interactable = false;
+            }
         }
 
 
