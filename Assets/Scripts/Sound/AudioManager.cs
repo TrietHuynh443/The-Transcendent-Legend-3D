@@ -25,6 +25,7 @@ public class AudioManager : MonoBehaviour
     private void Start()
     {
         PlayMusic("Theme");
+        PlaySFX("EarthQuake");
     }
 
     public void PlayMusic(string name)
