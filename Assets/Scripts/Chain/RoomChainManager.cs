@@ -11,10 +11,6 @@ public class RoomChainedManager : MonoBehaviourPunCallbacks
 {
     [SerializeField] private ChainManager _chainManager;
 
-    void Start()
-    {
-    }
-
     public void PlayerJoinRoom()
     {
         Debug.Log("RoomChainManager/PlayerJoinRoom");

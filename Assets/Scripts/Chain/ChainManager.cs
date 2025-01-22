@@ -208,8 +208,10 @@ public class ChainManager : MonoBehaviourPunCallbacks, IPunObservable
                 GameObject player2Obj = FindPlayerById(player2.ActorNumber);
                 stream.SendNext(player1.ActorNumber);
                 stream.SendNext(player2.ActorNumber);
-                stream.SendNext(player1Obj.GetComponent<Rigidbody>().velocity);
-                stream.SendNext(player2Obj.GetComponent<Rigidbody>().velocity);
+                stream.SendNext(player1Obj.transform.position);
+                stream.SendNext(player2Obj.transform.position);
+                stream.SendNext(player1Obj.transform.rotation);
+                stream.SendNext(player2Obj.transform.rotation);
             }
         }
         else
@@ -219,23 +221,20 @@ public class ChainManager : MonoBehaviourPunCallbacks, IPunObservable
             {
                 int actorNumber1 = (int)stream.ReceiveNext();
                 int actorNumber2 = (int)stream.ReceiveNext();
-                Vector3 vel1 = (Vector3)stream.ReceiveNext();
-                Vector3 vel2 = (Vector3)stream.ReceiveNext();
-                
+                Vector3 pos1 = (Vector3)stream.ReceiveNext();
+                Vector3 pos2 = (Vector3)stream.ReceiveNext();
+                Quaternion rot1 = (Quaternion)stream.ReceiveNext();
+                Quaternion rot2 = (Quaternion)stream.ReceiveNext();
+
                 GameObject player1Obj = FindPlayerById(actorNumber1);
                 GameObject player2Obj = FindPlayerById(actorNumber2);
 
                 var player1Movement = player1Obj.GetComponent<PlayerMovementController>();
                 var player2Movement = player2Obj.GetComponent<PlayerMovementController>();
-
-                if (player1Obj.GetComponent<PhotonView>().IsMine)
-                {
-                    player1Movement.SetChainPosition(vel1);
-                }
-                else if (player2Obj.GetComponent<PhotonView>().IsMine)
-                {
-                    player2Movement.SetChainPosition(vel2);
-                }
+                
+                float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
+                player1Movement.SetChainPosition(pos1, rot1, lag);
+                player2Movement.SetChainPosition(pos2, rot2, lag);
             }
         }
     }
