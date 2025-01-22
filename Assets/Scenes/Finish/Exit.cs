@@ -10,6 +10,8 @@ public class Exit : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        if (!other.CompareTag("Player"))
+            return;
         int trigger = other.gameObject.GetComponent<PhotonView>().Owner.ActorNumber;
         if (!triggerList.Contains(trigger))
             triggerList.Add(trigger);

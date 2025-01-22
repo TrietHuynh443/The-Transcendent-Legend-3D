@@ -12,6 +12,9 @@ public class DetectStone : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (isTriggered) return;
+        
+        if (!other.CompareTag("Player"))
+            return;
 
         int trigger = other.gameObject.GetComponent<PhotonView>().Owner.ActorNumber;
         if (!triggerList.Contains(trigger))
