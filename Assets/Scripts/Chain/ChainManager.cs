@@ -1,48 +1,57 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Obi;
 using Photon.Pun;
+using Photon.Realtime;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class ChainManager : MonoBehaviourPunCallbacks
+public class ChainManager : MonoBehaviourPunCallbacks, IPunObservable
 {
-    private Dictionary<GameObject, GameObject> _solvers = new Dictionary<GameObject, GameObject>();
     [SerializeField] private GameObject _solverPrefab;
     [SerializeField] private GameObject _chainPrefab;
 
     [Header("Chain Config")] [SerializeField]
     private float _playerMidpointRate = 0.35f;
 
+    [SerializeField] private float _maxBending = 0.02f;
+    [SerializeField] private float _chainLength = 5f;
+
+
     [Range(0, 15)] [SerializeField] private int _playerCategory = 5;
     [Range(0, 15)] [SerializeField] private int _chainCategory = 10;
     [SerializeField] private float _controlPointMass = 0.01f;
 
-    public void CreateChain(GameObject player1, GameObject player2)
-    {
-        GameObject solver = Instantiate(_solverPrefab);
-        _solvers.Add(player1, solver);
 
-        StartCoroutine(CreateChainBluePrint(solver, player1, player2));
+    [SerializeField]
+    private Dictionary<(Player, Player), GameObject> _chains = new Dictionary<(Player, Player), GameObject>();
+
+    [SerializeField]
+    private Dictionary<GameObject, (Player, Player)> _chainsInv = new Dictionary<GameObject, (Player, Player)>();
+
+
+    public GameObject CreateSolver(GameObject player1, GameObject player2)
+    {
+        GameObject solverObj = Instantiate(_solverPrefab);
+
+        StartCoroutine(CreateChainBluePrint(solverObj, player1, player2));
+
+        return solverObj;
     }
 
-    public void DeleteChain(GameObject player1)
+    private IEnumerator CreateChainBluePrint(GameObject solverObj, GameObject player1, GameObject player2)
     {
-        Destroy(_solvers[player1]);
-        _solvers.Remove(player1);
-    }
-
-    private IEnumerator CreateChainBluePrint(GameObject solver, GameObject player1, GameObject player2)
-    {
-        GameObject chain = Instantiate(_chainPrefab, solver.transform);
+        GameObject chain = Instantiate(_chainPrefab, solverObj.transform);
         ObiRope rope = chain.GetComponent<ObiRope>();
-        rope.maxBending = 0.02f;
+        rope.maxBending = _maxBending;
 
         yield return 0;
 
         // Create a new blueprint for the rope
         ObiRopeBlueprint blueprint = ScriptableObject.CreateInstance<ObiRopeBlueprint>();
-        blueprint.resolution = 0.5f;
+        blueprint.resolution = 1.0f;
 
         // Calculate the desired attachment points (midpoints of players)
         Vector3 attachmentPoint1 = player1.transform.position;
@@ -60,13 +69,34 @@ public class ChainManager : MonoBehaviourPunCallbacks
 
         // Configure the blueprint path with two control points
         blueprint.path.Clear();
-        blueprint.path.AddControlPoint(Vector3.zero, -localHit.normalized, localHit.normalized, Vector3.up,
-            _controlPointMass, 0.1f,
-            1, filter, Color.white, "Player1 Attachment");
-        blueprint.path.AddControlPoint(localHit, -localHit.normalized, localHit.normalized, Vector3.up,
-            _controlPointMass, 0.1f, 1,
-            filter, Color.white, "Player2 Attachment");
+        blueprint.path.AddControlPoint(attachmentPoint1, -localHit.normalized, localHit.normalized, Vector3.up,
+            _controlPointMass, 0.1f, 1, filter, Color.white, "Player1 Attachment");
+        blueprint.path.AddControlPoint(attachmentPoint2, -localHit.normalized, localHit.normalized, Vector3.up,
+            _controlPointMass, 0.1f, 1, filter, Color.white, "Player2 Attachment");
         blueprint.path.FlushEvents();
+
+        var attachment1 = rope.AddComponent<ObiParticleAttachment>();
+        attachment1.target = player1.transform;
+        attachment1.particleGroup = blueprint.groups[0];
+
+        var attachment2 = rope.AddComponent<ObiParticleAttachment>();
+        attachment2.target = player2.transform;
+        attachment2.particleGroup = blueprint.groups[1];
+
+        ObiRopeCursor cursor = rope.GetComponent<ObiRopeCursor>();
+        cursor.ChangeLength(-rope.restLength);
+        cursor.ChangeLength(_chainLength);
+
+        if (photonView.IsMine)
+        {
+            attachment1.attachmentType = ObiParticleAttachment.AttachmentType.Dynamic;
+            attachment2.attachmentType = ObiParticleAttachment.AttachmentType.Dynamic;
+        }
+        else
+        {
+            attachment1.attachmentType = ObiParticleAttachment.AttachmentType.Static;
+            attachment2.attachmentType = ObiParticleAttachment.AttachmentType.Static;
+        }
 
         // Generate the rope's particle representation
         yield return blueprint.Generate();
@@ -74,42 +104,139 @@ public class ChainManager : MonoBehaviourPunCallbacks
         // Assign the blueprint to the rope
         rope.ropeBlueprint = blueprint;
 
-        yield return new WaitForFixedUpdate();
-        yield return null;
+        // yield return new WaitForFixedUpdate();
+        // yield return null;
+    }
 
-        var pinConstraints =
-            rope.GetConstraintsByType(Oni.ConstraintType.Pin) as ObiConstraints<ObiPinConstraintsBatch>;
-        pinConstraints.Clear();
-
-        var batch = new ObiPinConstraintsBatch();
-        batch.AddConstraint(rope.solverIndices[0],
-            player1.GetComponent<ObiColliderBase>(),
-            player1.transform.InverseTransformPoint(attachmentPoint1), Quaternion.identity, 0, 0,
-            float.PositiveInfinity);
-
-        batch.AddConstraint(rope.solverIndices[blueprint.activeParticleCount - 1],
-            player2.GetComponent<ObiColliderBase>(),
-            player2.transform.InverseTransformPoint(attachmentPoint2), Quaternion.identity, 0, 0,
-            float.PositiveInfinity);
-
-        batch.activeConstraintCount = 2;
-        pinConstraints.AddBatch(batch);
-
-        rope.SetConstraintsDirty(Oni.ConstraintType.Pin);
-        
-        if (!photonView.IsMine)
+    private GameObject FindPlayerById(int actorNumber)
+    {
+        foreach (var obj in FindObjectsOfType<PlayerSetup>())
         {
-            ObiSolver obiSolver = solver.GetComponent<ObiSolver>();
-            
-            obiSolver.distanceConstraintParameters.enabled = false;
-            obiSolver.bendingConstraintParameters.enabled = false;
-            obiSolver.particleCollisionConstraintParameters.enabled = false;
-            obiSolver.collisionConstraintParameters.enabled = false;
-            obiSolver.pinConstraintParameters.enabled = false;
+            if (obj.GetComponent<PhotonView>().Owner.ActorNumber == actorNumber)
+                return obj.gameObject;
+        }
+
+        return null;
+    }
+
+    private void CreateChain(Player player1, Player player2)
+    {
+        GameObject player1Obj = FindPlayerById(player1.ActorNumber);
+        GameObject player2Obj = FindPlayerById(player2.ActorNumber);
+        if (player1Obj != null && player2Obj != null)
+        {
+            Debug.Log("Creating chain between player " + player1.ActorNumber + " and " + player2.ActorNumber);
+            GameObject chain = CreateSolver(player1Obj, player2Obj);
+
+            _chains.Add((player1, player2), chain);
+            _chainsInv.Add(chain, (player1, player2));
+        }
+    }
+
+    private void DestroyChain(Player player1, Player player2)
+    {
+        Debug.Log("Destroying chain between player " + player1.ActorNumber + " and " + player2.ActorNumber);
+        Destroy(_chains[(player1, player2)]);
+        _chainsInv.Remove(_chains[(player1, player2)]);
+        _chains.Remove((player1, player2));
+    }
+
+    public void UpdateChainPlayerJoin(Player player)
+    {
+        Debug.Log("Network: UpdateChainPlayerJoined " + player.ActorNumber);
+
+        if (PhotonNetwork.CurrentRoom.PlayerCount >= 2)
+        {
+            for (int i = 0; i < PhotonNetwork.PlayerList.Length - 1; i++)
+            {
+                Player player1 = PhotonNetwork.PlayerList[i];
+                Player player2 = PhotonNetwork.PlayerList[i + 1];
+
+                if (!_chains.ContainsKey((player1, player2)))
+                {
+                    CreateChain(player1, player2);
+                }
+            }
+        }
+    }
+
+    public void UpdateChainForPlayerLeave(Player player)
+    {
+        Debug.Log("Network: UpdateChainForPlayerLeave " + player.ActorNumber);
+
+        Player previousPlayer = null;
+        Player nextPlayer = null;
+
+        foreach (var playerPair in _chains.Keys)
+        {
+            if (Equals(playerPair.Item1, player))
+            {
+                nextPlayer = playerPair.Item2;
+            }
+
+            if (Equals(playerPair.Item2, player))
+            {
+                previousPlayer = playerPair.Item1;
+            }
+        }
+
+        if (_chains.ContainsKey((player, nextPlayer)))
+        {
+            DestroyChain(player, nextPlayer);
+        }
+
+        if (_chains.ContainsKey((previousPlayer, player)))
+        {
+            DestroyChain(previousPlayer, player);
+        }
+
+        if (previousPlayer != null && nextPlayer != null)
+        {
+            CreateChain(previousPlayer, nextPlayer);
+        }
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(_chainsInv.Count);
+            foreach (var item in _chainsInv)
+            {
+                var (player1, player2) = item.Value;
+                GameObject player1Obj = FindPlayerById(player1.ActorNumber);
+                GameObject player2Obj = FindPlayerById(player2.ActorNumber);
+                stream.SendNext(player1.ActorNumber);
+                stream.SendNext(player2.ActorNumber);
+                stream.SendNext(player1Obj.GetComponent<Rigidbody>().velocity);
+                stream.SendNext(player2Obj.GetComponent<Rigidbody>().velocity);
+            }
         }
         else
         {
-            Debug.Log("Help2");
+            int count = (int)stream.ReceiveNext();
+            for (int i = 0; i < count; i++)
+            {
+                int actorNumber1 = (int)stream.ReceiveNext();
+                int actorNumber2 = (int)stream.ReceiveNext();
+                Vector3 vel1 = (Vector3)stream.ReceiveNext();
+                Vector3 vel2 = (Vector3)stream.ReceiveNext();
+                
+                GameObject player1Obj = FindPlayerById(actorNumber1);
+                GameObject player2Obj = FindPlayerById(actorNumber2);
+
+                var player1Movement = player1Obj.GetComponent<PlayerMovementController>();
+                var player2Movement = player2Obj.GetComponent<PlayerMovementController>();
+
+                if (player1Obj.GetComponent<PhotonView>().IsMine)
+                {
+                    player1Movement.SetChainPosition(vel1);
+                }
+                else if (player2Obj.GetComponent<PhotonView>().IsMine)
+                {
+                    player2Movement.SetChainPosition(vel2);
+                }
+            }
         }
     }
 }
