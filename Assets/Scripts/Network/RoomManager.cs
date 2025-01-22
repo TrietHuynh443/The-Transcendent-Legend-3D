@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Manager;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
@@ -50,6 +51,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
     
     public void ConnectRoom()
     {
+        // StartCoroutine(Wait)
+        _spawnPoint = GameObject.FindGameObjectWithTag($"SpawnPoint").transform;
         Vector3 pos = Vector3.forward * (_players.Count * 5f);
         pos = _spawnPoint == null ? pos  : pos + _spawnPoint.position;
         GameObject player = PhotonNetwork.Instantiate(_playerPrefab.name, pos, Quaternion.identity);
@@ -82,6 +85,12 @@ public class RoomManager : MonoBehaviourPunCallbacks
         // photonView.RPC("RegisterPlayer", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer);
     }
 
+    public override void OnCreatedRoom()
+    {
+        base.OnCreatedRoom();
+        GameManager.Instance.IsMaster = true;
+    }
+
     private void InitAvatar(GameObject player)
     {
         var playerModelController = player.GetComponent<PlayerModelController>();
@@ -89,7 +98,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
         {
             return;
         }
-        photonView.RPC("SetModel", RpcTarget.AllBuffered, _uiDataSO.CharacterId);
+        // photonView.RPC("SetModel", RpcTarget.AllBuffered, _uiDataSO.CharacterId);
     }
 
     public override void OnPlayerLeftRoom(Player player)

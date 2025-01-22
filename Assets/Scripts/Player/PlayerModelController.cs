@@ -10,6 +10,7 @@ public class PlayerModelController : MonoBehaviourPunCallbacks
     
     private Animator _animator;
     [SerializeField] private float _playerHeight;
+    [SerializeField] private UIDataSO _uiDataSO;
     public Animator Animator => _animator;
     public float PlayerHeight => _playerHeight;
 
@@ -22,7 +23,7 @@ public class PlayerModelController : MonoBehaviourPunCallbacks
         int currentPlayerCount = PhotonNetwork.CurrentRoom.PlayerCount;
         if (photonView.IsMine)
         {
-            photonView.RPC("SetModel", RpcTarget.AllBuffered, currentPlayerCount % _models.Count);
+            photonView.RPC("SetModel", RpcTarget.AllBuffered, _uiDataSO.CharacterId % _models.Count);
         }
     }
 

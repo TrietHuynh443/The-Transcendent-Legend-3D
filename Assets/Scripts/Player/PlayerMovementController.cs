@@ -14,6 +14,7 @@ public class PlayerMovementController : MonoBehaviourPunCallbacks, IPunObservabl
     [SerializeField] private float _groundDrag;
     
     [SerializeField] private float _jumpForce;
+    [SerializeField] private float _jumpCooldown;
     [SerializeField] private float _airMultiplier;
     private bool _readyToJump = true;
     private bool _isInAir = false;
