@@ -215,7 +215,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3642525437540443135}
-  - component: {fileID: 8251676744108549801}
+  - component: {fileID: 997111696081273634}
   - component: {fileID: 4846037258260617362}
   - component: {fileID: 6231487856599991259}
   - component: {fileID: 6188893190888584631}
@@ -242,7 +242,7 @@ Transform:
   - {fileID: 7043714846814456635}
   m_Father: {fileID: 3527981190921436032}
   m_LocalEulerAnglesHint: {x: 22.944, y: 0, z: 0}
---- !u!114 &8251676744108549801
+--- !u!114 &997111696081273634
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -251,10 +251,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1337173866828188342}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ed3b89beb636b5489797bcf3ad1d773, type: 3}
+  m_Script: {fileID: 11500000, guid: 03bc3d5d41943da4c9e37e8978ae2575, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camTransform: {fileID: 3642525437540443135}
+  camTransform: {fileID: 0}
   shakeDuration: 10
   shakeAmount: 0.7
   decreaseFactor: 1
